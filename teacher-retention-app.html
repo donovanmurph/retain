@@ -1,0 +1,1017 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teacher Retention Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Matches the Teacher Retention Agent web page: navy header with gold rule,
+   gray hero band, white page, centered column, gold-underlined headings. */
+:root {
+  --navy: #14294b; --navy-deep: #0d1d37; --gold: #c4972c; --gold-text: #8a6514; --gold-soft: #f7f0de;
+  --ink: #1d2533; --muted: #566070; --faint: #8a93a3; --line: #dde2ea; --band: #f3f5f8; --page: #ffffff;
+  --green: #2f6b4f; --green-soft: #e6f1eb; --red: #9b2c2c;
+  --font-head: "Merriweather", Georgia, "Times New Roman", serif;
+  --font-body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font-family: var(--font-body); font-size: 18px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+input, select, textarea { font: inherit; color: var(--ink); }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Site chrome */
+.topbar { background: var(--navy-deep); color: #c9d3e3; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; }
+.topbar .wrap { padding-block: 6px; display: flex; justify-content: space-between; gap: 6px 20px; flex-wrap: wrap; }
+.topbar #banner { color: #e7d3a3; }
+header.site { background: var(--navy); color: #fff; border-bottom: 4px solid var(--gold); }
+header.site .wrap { padding-block: 18px; display: flex; align-items: center; gap: 14px; }
+.seal { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--gold); display: grid; place-items: center; flex: none; }
+.seal svg { width: 24px; height: 24px; }
+.site-name { font-family: var(--font-head); font-size: 1.15rem; line-height: 1.25; }
+.site-name small { display: block; font-family: var(--font-body); font-size: .8rem; color: #c9d3e3; font-weight: 400; letter-spacing: .04em; }
+
+nav.menu { background: #fff; border-bottom: 1px solid var(--line); }
+nav.menu .wrap { display: flex; gap: 4px; overflow-x: auto; }
+.nav { display: flex; align-items: center; gap: 8px; padding: 14px 16px 11px; border-bottom: 3px solid transparent; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.nav:first-child { margin-left: -16px; }
+.nav:hover { color: var(--navy); }
+.nav.on { color: var(--navy); font-weight: 700; border-bottom-color: var(--gold); }
+.nav.files { margin-left: auto; }
+.count { min-width: 24px; height: 24px; border-radius: 12px; padding: 0 7px; font-size: .8rem; font-weight: 700; line-height: 24px; text-align: center; background: var(--band); color: var(--navy); }
+.count.gold { background: var(--gold); color: var(--navy-deep); }
+
+main { flex: 1; }
+main:focus { outline: none; }
+footer { background: var(--navy); color: #c9d3e3; font-size: .9rem; margin-top: 16px; }
+footer .wrap { padding-block: 22px; }
+
+/* Hero band, headings */
+.hero { background: var(--band); border-bottom: 1px solid var(--line); }
+.hero .wrap { padding-block: 40px 36px; }
+h1, h2 { font-family: var(--font-head); color: var(--navy); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.8rem, 4.5vw, 2.4rem); line-height: 1.2; }
+.subhead { margin: 12px 0 0; max-width: 62ch; color: var(--muted); font-size: 1.1rem; }
+.eyebrow, .label { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--gold-text); font-weight: 600; margin: 0 0 6px; }
+h2.sec { font-size: 1.35rem; padding-bottom: 10px; border-bottom: 2px solid var(--gold); display: inline-block; margin-bottom: 20px; }
+.content { padding-block: 36px 56px; }
+.spaced { margin-top: 48px; }
+
+/* Controls */
+.tools { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-bottom: 28px; }
+.search { flex: 1 1 240px; max-width: 340px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+.select { padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+.check { display: flex; gap: 8px; align-items: center; color: var(--muted); font-weight: 600; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--navy); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: #fff; }
+.seg button { padding: 8px 14px; font-weight: 600; color: var(--muted); border-left: 1px solid var(--line); white-space: nowrap; }
+.seg button:first-child { border-left: 0; }
+.seg button:hover { color: var(--navy); background: var(--band); }
+.seg button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+.seg.small button { padding: 4px 11px; font-size: .88rem; }
+.btn { display: inline-block; background: var(--navy); color: #fff; font-weight: 700; padding: 9px 18px; border-radius: 4px; }
+.btn:hover { background: var(--navy-deep); }
+.btn.ghost { background: #fff; color: var(--navy); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.ghost:hover { background: var(--band); }
+.linkish { color: var(--navy); font-weight: 700; text-decoration: underline; text-decoration-color: var(--gold); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.err { color: var(--red); font-weight: 600; font-size: .92rem; margin: 8px 0 0; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th { text-align: left; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 14px 12px; border-bottom: 2px solid var(--navy); white-space: nowrap; }
+td { padding: 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tbody tr[data-id] { cursor: pointer; }
+tbody tr[data-id]:hover td { background: var(--band); }
+tbody tr.flagged td { background: #fffbf1; }
+tbody tr.flagged:hover td { background: var(--gold-soft); }
+td.nm { font-weight: 700; color: var(--navy); white-space: nowrap; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ok { color: var(--faint); font-weight: 600; }
+.missing { color: var(--muted); font-weight: 600; font-size: .9rem; }
+.flag { display: inline-block; background: var(--gold); color: var(--navy-deep); font-weight: 700; font-size: .86rem; line-height: 1.4; padding: 4px 10px; border-radius: 3px; white-space: nowrap; margin: 2px 4px 2px 0; }
+.flag::before { content: "\25B2"; font-size: .6rem; margin-right: 6px; vertical-align: 2px; }
+.flag.prog { background: var(--gold-soft); box-shadow: inset 0 0 0 1px var(--gold); }
+.empty { color: var(--muted); padding: 24px 14px; }
+
+/* Flags page */
+.flagsgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 56px; }
+.bar { margin-bottom: 20px; }
+.bar .bl { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; margin-bottom: 6px; }
+.bar .bl b { font-family: var(--font-head); color: var(--navy); }
+.bar .bt { height: 10px; background: var(--band); }
+.bar .bf { height: 100%; background: var(--navy); }
+.bar.top .bf { background: var(--gold); }
+.orow { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border-bottom: 1px solid var(--line); text-align: left; }
+.orow:first-child { border-top: 2px solid var(--navy); }
+.orow:hover { background: var(--gold-soft); }
+.orow .n { font-weight: 700; color: var(--navy); }
+.orow .n small { display: block; font-weight: 600; color: var(--muted); font-size: .85rem; }
+.reason { font-weight: 600; font-size: .92rem; color: var(--navy-deep); background: var(--gold-soft); border-left: 4px solid var(--gold); padding: 4px 10px; white-space: nowrap; text-align: right; }
+.reason small { display: block; font-weight: 600; color: var(--muted); font-size: .8rem; }
+.reason.done { background: var(--green-soft); border-left-color: var(--green); }
+.note { margin-top: 28px; padding: 16px 20px; background: var(--band); border-left: 5px solid var(--navy); }
+.note b { color: var(--navy); }
+
+/* Person page */
+.back { color: var(--muted); font-weight: 600; margin-bottom: 20px; display: inline-flex; gap: 8px; }
+.back:hover { color: var(--navy); }
+.phead { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.av { width: 88px; height: 88px; border-radius: 50%; background: var(--navy); color: #fff; font-weight: 700; font-size: 1.8rem; line-height: 82px; text-align: center; border: 3px solid var(--gold); flex: none; }
+.phead .who { flex: 1 1 260px; min-width: 0; }
+.phead .subhead { margin-top: 6px; }
+.pbadge { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.clear { display: inline-block; color: var(--muted); font-weight: 700; font-size: .9rem; border: 1px solid var(--line); background: #fff; padding: 4px 12px; border-radius: 3px; }
+.clear.done { color: var(--green); border-color: #b9d6c6; background: var(--green-soft); }
+.pbody { max-width: 860px; }
+.fblock { margin-bottom: 48px; }
+.fhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 20px; flex-wrap: wrap; }
+.fblock h2 { font-size: 1.35rem; padding-bottom: 10px; border-bottom: 2px solid var(--gold); display: inline-block; }
+.when { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
+.why { list-style: none; margin: 14px 0 0; padding: 0; }
+.why li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); font-weight: 600; }
+.why li:first-child { border-top: 2px solid var(--navy); }
+.src { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; text-align: right; }
+.src.you { color: var(--gold-text); }
+.step { margin-top: 18px; background: var(--gold-soft); border-left: 5px solid var(--gold); padding: 16px 22px; }
+.step .label { margin-bottom: 2px; }
+.step p:not(.label) { margin: 0; font-family: var(--font-head); color: var(--navy); font-size: 1.1rem; line-height: 1.5; }
+.fblock.resolved .why, .fblock.resolved .step { opacity: .55; }
+.fblock.resolved .step { background: var(--green-soft); border-left-color: var(--green); }
+.notes { margin-top: 16px; }
+.notes label { display: block; font-weight: 600; color: var(--muted); font-size: .9rem; margin-bottom: 4px; }
+.notes textarea { width: 100%; min-height: 64px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; resize: vertical; font-size: 1rem; }
+.notes small { color: var(--faint); font-weight: 600; }
+.ask { background: var(--band); border-top: 4px solid var(--navy); padding: 20px 24px; margin-bottom: 48px; }
+.ask p { margin: 0 0 6px; }
+.ask .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 16px; margin: 14px 0; }
+.ask .fields label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: .95rem; }
+.ask .fields small { color: var(--muted); font-weight: 600; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; }
+.ask input, .ask select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+dl.file { display: grid; grid-template-columns: minmax(150px, max-content) minmax(0, 1fr) auto; margin: 0; border-top: 2px solid var(--navy); }
+dl.file > div { display: contents; }
+dl.file dt, dl.file dd { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--line); }
+dl.file dt { color: var(--muted); font-weight: 600; padding-right: 20px; }
+dl.file dd { font-weight: 600; }
+dl.file dd.none { color: var(--faint); }
+dl.file dd.gone { color: var(--red); }
+dl.file dd.src { padding-left: 16px; display: flex; align-items: center; justify-content: flex-end; }
+
+/* Openings: cards like the web page's "What the agent does" boxes */
+.ocards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.ocard { background: var(--band); border-top: 4px solid var(--navy); padding: 20px; }
+.ocard.cold { border-top-color: var(--gold); }
+.ohead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.ocard h2 { font-size: 1.1rem; line-height: 1.35; }
+.days { font-weight: 700; color: var(--navy); white-space: nowrap; font-size: .92rem; }
+.meta { color: var(--muted); font-size: .92rem; margin: 4px 0 12px; }
+.clist { list-style: none; margin: 0; padding: 0; }
+.clist li { border-top: 1px solid var(--line); }
+.clist button { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; text-align: left; }
+.clist button:hover .cn { text-decoration: underline; text-decoration-color: var(--gold); }
+.cn { font-weight: 700; color: var(--navy); }
+.cn small { display: block; color: var(--muted); font-weight: 600; font-size: .85rem; }
+.nocand { margin: 0; padding: 10px 14px; background: var(--gold-soft); border-left: 4px solid var(--gold); font-weight: 600; color: var(--navy-deep); }
+
+/* District files */
+.filerow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.filerow:first-of-type { border-top: 2px solid var(--navy); }
+.filerow h2 { font-size: 1.1rem; }
+.filerow p { margin: 2px 0 0; color: var(--muted); }
+.filerow .acts { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.filerow input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.filerow label.btn { cursor: pointer; }
+.filerow input[type=file]:focus-visible + label { outline: 3px solid var(--gold); outline-offset: 2px; }
+.result { margin-top: 24px; padding: 16px 20px; background: var(--green-soft); border-left: 5px solid var(--green); }
+.result.warn { background: var(--gold-soft); border-left-color: var(--gold); }
+.result ul { margin: 8px 0 0; padding-left: 20px; }
+.howto { max-width: 70ch; }
+.howto ul { margin: 0; }
+.howto li { margin-bottom: 6px; }
+.howto code { background: var(--band); padding: 1px 6px; font-size: .9em; }
+
+@media (max-width: 900px) {
+  .flagsgrid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+}
+@media (max-width: 720px) {
+  body { font-size: 17px; }
+  .hero .wrap { padding-block: 28px 26px; }
+  .nav.files { margin-left: 0; }
+  .av { width: 68px; height: 68px; line-height: 62px; font-size: 1.4rem; }
+  dl.file { grid-template-columns: 1fr auto; }
+  dl.file dt { grid-column: 1 / -1; border-bottom: 0; padding-bottom: 0; }
+  .why li { flex-direction: column; gap: 2px; }
+  .src { text-align: left; }
+  .reason { white-space: normal; }
+  .filerow { grid-template-columns: 1fr; }
+  .filerow .acts { justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap"><span>Staff tools · Human resources</span><span id="banner"></span></div></div>
+<header class="site">
+  <div class="wrap">
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c4972c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-5 9 5-9 5-9-5z"/><path d="M7 12v4c2.5 2 7.5 2 10 0v-4"/></svg>
+    </div>
+    <div class="site-name">Teacher Retention Agent<small>Westfield High School · Principal</small></div>
+  </div>
+</header>
+<nav class="menu" aria-label="Sections">
+  <div class="wrap">
+    <button class="nav" data-view="flags">Flags <span class="count gold" id="c-flags"></span></button>
+    <button class="nav" data-view="teachers">Current teachers <span class="count" id="c-teachers"></span></button>
+    <button class="nav" data-view="candidates">Prospective hires <span class="count" id="c-candidates"></span></button>
+    <button class="nav" data-view="openings">Openings <span class="count" id="c-openings"></span></button>
+    <button class="nav files" data-view="files">District files</button>
+  </div>
+</nav>
+<main id="main" tabindex="-1"></main>
+<footer><div class="wrap">Teacher Retention Agent · Uses only the information in your district's files. It does not contact anyone.</div></footer>
+
+<script>
+"use strict";
+/* ==================================================================
+   FIELDS. Each field says where it comes from and how to read it.
+   A blank value means "missing from the files"; the app never fills
+   it in by itself. "none" means the files say there isn't one.
+================================================================== */
+const STAGES = ["Application review", "Interview scheduled", "Interviewed", "Reference check", "Offer pending", "Offer accepted"];
+const FIELDS = {
+  teacher: [
+    { k: "name",           csv: "name",                label: "Name",                     src: "Personnel file",    type: "text" },
+    { k: "subject",        csv: "subject",             label: "Subject",                  src: "Personnel file",    type: "text" },
+    { k: "dept",           csv: "department",          label: "Department",               src: "Personnel file",    type: "text" },
+    { k: "hired",          csv: "hired",               label: "Hired",                    src: "Personnel file",    type: "month" },
+    { k: "year",           csv: "year_in_district",    label: "Year in district",         src: "Personnel file",    type: "int" },
+    { k: "service",        csv: "years_of_service",    label: "Years of service",         src: "Pension records",   type: "int" },
+    { k: "retire",         csv: "retirement_eligible", label: "Retirement eligibility",   src: "Pension records",   type: "monthOrNone" },
+    { k: "sections",       csv: "sections",            label: "Sections this year",       src: "Master schedule",   type: "int" },
+    { k: "courses",        csv: "different_courses",   label: "Different courses",        src: "Master schedule",   type: "int" },
+    { k: "mentor",         csv: "mentor",              label: "Mentor",                   src: "Mentoring roster",  type: "textOrNone" },
+    { k: "mentorRequest",  csv: "mentor_requested",    label: "Mentor requested",         src: "Mentoring roster",  type: "monthOrNone" },
+    { k: "transferFiled",  csv: "transfer_filed",      label: "Transfer request filed",   src: "HR requests",       type: "dateOrNone" },
+    { k: "transferTo",     csv: "transfer_to",         label: "Transfer requested to",    src: "HR requests",       type: "text" },
+    { k: "contractType",   csv: "contract_type",       label: "Contract",                 src: "Contracts",         type: "choice", options: ["Probationary", "Continuing"] },
+    { k: "renewal",        csv: "renewal_status",      label: "Contract renewal",         src: "Contracts",         type: "choice", options: ["Not yet offered", "Offered", "Signed", "Not applicable"] },
+    { k: "renewBy",        csv: "renewal_deadline",    label: "Renewal deadline",         src: "Contracts",         type: "dateOrNone" },
+    { k: "licenseType",    csv: "license_type",        label: "License type",             src: "State license lookup", type: "choice", options: ["Standard", "Provisional", "Emergency"] },
+    { k: "licenseArea",    csv: "license_area",        label: "License area",             src: "State license lookup", type: "text" },
+    { k: "licenseExpires", csv: "license_expires",     label: "License expires",          src: "State license lookup", type: "month" },
+    { k: "licenseRenewal", csv: "license_renewal",     label: "License renewal",          src: "State license lookup", type: "choice", options: ["In progress", "None on file"] }
+  ],
+  candidate: [
+    { k: "name",           csv: "name",                label: "Name",                     src: "Application",       type: "text" },
+    { k: "opening",        csv: "opening",             label: "Opening applied for",      src: "Application",       type: "text" },
+    { k: "applied",        csv: "applied",             label: "Applied",                  src: "Application",       type: "date" },
+    { k: "stage",          csv: "stage",               label: "Stage",                    src: "Application log",   type: "choice", options: STAGES },
+    { k: "lastContact",    csv: "last_contact",        label: "Last contact",             src: "Application log",   type: "date" },
+    { k: "experience",     csv: "years_teaching",      label: "Years teaching",           src: "Application",       type: "int" },
+    { k: "available",      csv: "available_to_start",  label: "Available to start",       src: "Application",       type: "date" },
+    { k: "licenseType",    csv: "license_type",        label: "License type",             src: "State license lookup", type: "choice", options: ["Standard", "Provisional", "Emergency"] },
+    { k: "licenseArea",    csv: "license_area",        label: "License area",             src: "State license lookup", type: "text" },
+    { k: "licenseExpires", csv: "license_expires",     label: "License expires",          src: "State license lookup", type: "month" },
+    { k: "openingStart",                               label: "Opening starts",           src: "Job postings",      type: "date", derived: true }
+  ],
+  opening: [
+    { k: "position",       csv: "position",            label: "Position",                 src: "Job postings",      type: "text" },
+    { k: "reason",         csv: "reason",              label: "Reason",                   src: "Job postings",      type: "text" },
+    { k: "posted",         csv: "posted",              label: "Posted",                   src: "Job postings",      type: "date" },
+    { k: "start",          csv: "start_date",          label: "Start date",               src: "Job postings",      type: "date" }
+  ]
+};
+const FIELD = {};
+for (const kind in FIELDS) { FIELD[kind] = {}; FIELDS[kind].forEach(f => FIELD[kind][f.k] = f); }
+
+/* ==================================================================
+   SAMPLE DISTRICT FILES. Made up for testing. Same column order as
+   FIELDS, written exactly the way a district spreadsheet would be.
+================================================================== */
+const SAMPLE = {
+  teacher: [
+    ["Ms. A. Rivera",    "Biology",            "Science",          "2025-08", 2,  2,  "none",    5, 2, "none",          "none",    "none",       "",                    "Probationary", "Not yet offered", "2027-04-15", "Standard", "Biology 7–12",           "2030-06", "None on file"],
+    ["Ms. L. Ortiz",     "English 10",         "English",          "2024-08", 3,  3,  "none",    5, 2, "none",          "2026-09", "none",       "",                    "Probationary", "Not yet offered", "2027-01-15", "Standard", "English 7–12",           "2029-06", "None on file"],
+    ["Ms. J. Chen",      "Mathematics",        "Mathematics",      "2019-08", 8,  8,  "none",    5, 2, "none",          "none",    "2026-10-03", "Lincoln High School", "Continuing",   "Not applicable",  "none",       "Standard", "Mathematics 7–12",       "2029-06", "None on file"],
+    ["Mr. D. Okafor",    "Chemistry",          "Science",          "1998-08", 29, 29, "2028-06", 5, 2, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Chemistry 7–12",         "2028-12", "None on file"],
+    ["Mr. R. Patel",     "Physics",            "Science",          "2021-08", 6,  6,  "none",    6, 4, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Physics 7–12",           "2031-06", "None on file"],
+    ["Ms. M. Hart",      "Geometry",           "Mathematics",      "2012-08", 15, 15, "2037-06", 5, 3, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Mathematics 7–12",       "2027-06", "None on file"],
+    ["Mr. K. Brooks",    "U.S. History",       "Social Studies",   "2026-08", 1,  1,  "none",    5, 2, "",              "",        "none",       "",                    "Probationary", "Not yet offered", "2027-04-15", "Standard", "Social Studies 7–12",    "2031-06", "None on file"],
+    ["Ms. E. Walsh",     "Spanish",            "World Languages",  "2025-08", 2,  2,  "none",    5, 3, "Mrs. P. Garza", "none",    "none",       "",                    "Probationary", "Offered",         "2027-04-15", "Standard", "Spanish K–12",           "2030-06", "None on file"],
+    ["Mr. S. Kim",       "Algebra I",          "Mathematics",      "2026-08", 1,  4,  "none",    5, 2, "Ms. M. Hart",   "none",    "none",       "",                    "Probationary", "Not yet offered", "2027-04-15", "Standard", "Mathematics 7–12",       "2029-06", "None on file"],
+    ["Mrs. P. Garza",    "Spanish",            "World Languages",  "2008-08", 19, 19, "2035-06", 5, 2, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Spanish K–12",           "2028-06", "None on file"],
+    ["Mr. T. Dubois",    "World History",      "Social Studies",   "2001-08", 26, 28, "2030-06", 5, 2, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Social Studies 7–12",    "2029-06", "None on file"],
+    ["Mrs. G. Foster",   "English 12",         "English",          "2010-08", 17, 17, "2036-06", 5, 3, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "English 7–12",           "2027-03", "In progress"],
+    ["Ms. H. Nakamura",  "Art",                "Fine Arts",        "2017-08", 10, 10, "none",    5, 3, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Visual Arts K–12",       "2030-06", "None on file"],
+    ["Mr. B. Osei",      "Physical Education", "Health & PE",      "2014-08", 13, 13, "none",    5, 2, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Physical Education K–12","2029-06", "None on file"],
+    ["Ms. C. Russo",     "Special Education",  "Student Services", "2024-08", 3,  3,  "none",    5, 3, "Mr. J. Webb",   "none",    "none",       "",                    "Probationary", "Not yet offered", "2027-04-15", "Standard", "Special Education K–12", "2029-06", "None on file"],
+    ["Mr. J. Webb",      "Special Education",  "Student Services", "2006-08", 21, 21, "2033-06", 5, 3, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Special Education K–12", "2028-06", "None on file"],
+    ["Mr. M. Alvarez",   "Earth Science",      "Science",          "2016-08", 11, 11, "none",    5, 2, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Earth Science 7–12",     "2030-06", "None on file"],
+    ["Mrs. K. Sullivan", "Music",              "Fine Arts",        "2003-08", 24, 24, "2031-06", 5, 3, "none",          "none",    "none",       "",                    "Continuing",   "Not applicable",  "none",       "Standard", "Music K–12",             "2029-06", "None on file"]
+  ],
+  candidate: [
+    ["T. Moreno",    "Physics",           "2026-09-22", "Interview scheduled", "2026-11-05", 3, "2027-08-01", "Provisional", "Physics 7–12",           "2027-08"],
+    ["M. Haddad",    "Mathematics",       "2026-09-28", "Reference check",     "2026-10-01", 6, "2027-08-01", "Standard",    "Mathematics 7–12",       "2030-06"],
+    ["S. Lindqvist", "English",           "2026-10-09", "Interviewed",         "2026-11-02", 2, "2028-01-04", "Standard",    "English 7–12",           "2029-06"],
+    ["J. Abara",     "Biology",           "2026-10-15", "Application review",  "2026-11-09", 0, "2027-06-15", "Standard",    "Biology 7–12",           "2031-06"],
+    ["C. Nguyen",    "Special Education", "2026-09-30", "Offer pending",       "2026-11-06", 9, "2027-01-04", "Standard",    "Special Education K–12", "2028-06"]
+  ],
+  opening: [
+    ["Physics",           "New section added", "2026-09-10", "2027-08-18"],
+    ["Mathematics",       "Resignation",       "2026-09-20", "2027-08-18"],
+    ["Special Education", "Mid-year vacancy",  "2026-09-25", "2027-01-04"],
+    ["English",           "Enrollment growth", "2026-10-01", "2027-08-18"],
+    ["Biology",           "Resignation",       "2026-10-05", "2027-08-18"],
+    ["Spanish",           "Enrollment growth", "2026-10-20", "2027-08-18"]
+  ]
+};
+
+/* ==================================================================
+   DATES AND VALUES
+================================================================== */
+const TODAY = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); })();
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTH = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ord = n => n + (["th","st","nd","rd"][(n % 100 - 20) % 10] || ["th","st","nd","rd"][n % 100] || "th");
+const dateOf = v => { const [y, m, d] = v.split("-").map(Number); return new Date(y, m - 1, d); };
+const monthEnd = v => { const [y, m] = v.split("-").map(Number); return new Date(y, m, 0); };
+const daysUntil = d => Math.round((d - TODAY) / 864e5);
+const fmtDate = v => { const d = dateOf(v); return MON[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); };
+const fmtMonth = v => { const [y, m] = v.split("-").map(Number); return MONTH[m - 1] + " " + y; };
+const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+const pad2 = n => String(n).padStart(2, "0");
+
+function validate(field, raw) {
+  const s = raw == null ? "" : String(raw).trim();
+  if (s === "") return { value: undefined };
+  let t = field.type;
+  if (/OrNone$/.test(t)) {
+    if (/^(none|n\/?a)$/i.test(s)) return { value: "none" };
+    t = t.replace("OrNone", "");
+  }
+  if (t === "text") return { value: s };
+  if (t === "int") return /^\d+$/.test(s) ? { value: Number(s) } : { error: "should be a whole number" };
+  if (t === "month") {
+    let m = s.match(/^(\d{4})-(\d{1,2})$/), y, mo;
+    if (m) { y = +m[1]; mo = +m[2]; } else if ((m = s.match(/^(\d{1,2})\/(\d{4})$/))) { y = +m[2]; mo = +m[1]; }
+    return y && mo >= 1 && mo <= 12 ? { value: y + "-" + pad2(mo) } : { error: "should be a month like 2028-06" };
+  }
+  if (t === "date") {
+    let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/), y, mo, d;
+    if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; } else if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) { y = +m[3]; mo = +m[1]; d = +m[2]; }
+    const dt = y ? new Date(y, mo - 1, d) : null;
+    return dt && dt.getMonth() === mo - 1 && dt.getDate() === d ? { value: y + "-" + pad2(mo) + "-" + pad2(d) } : { error: "should be a date like 2027-08-18" };
+  }
+  if (t === "choice") {
+    const hit = field.options.find(o => o.toLowerCase() === s.toLowerCase());
+    return hit ? { value: hit } : { error: "should be one of: " + field.options.join(", ") };
+  }
+  return { value: s };
+}
+
+function show(field, v) {
+  if (v === undefined) return null;
+  if (v === "none") return "None on file";
+  const t = field.type.replace("OrNone", "");
+  if (t === "month") return fmtMonth(v);
+  if (t === "date") return fmtDate(v);
+  if (field.k === "year") return ord(v);
+  return String(v);
+}
+
+/* ==================================================================
+   FLAG RULES. Each rule lists the fields it needs. If a needed field
+   is missing, the check is not run and the app asks for it instead.
+================================================================== */
+const RULES = {
+  teacher: [
+    {
+      id: "mentor", reason: "Early career, no mentor",
+      when: "a teacher in their first 3 years in the district has no mentor assigned.",
+      needs: p => p.year === undefined ? ["year"] : p.year > 3 ? [] : p.mentor === "none" ? ["mentor", "mentorRequest"] : ["mentor"],
+      applies: p => p.year <= 3 && p.mentor === "none",
+      why: p => [
+        [ord(p.year) + " year in the district", "year"],
+        ["No mentor assigned", "mentor"],
+        [p.mentorRequest === "none" ? "No mentor requested" : "Mentor requested " + fmtMonth(p.mentorRequest) + ", not yet assigned", "mentorRequest"]
+      ],
+      step: () => "Assign a mentor before the school year ends."
+    },
+    {
+      id: "transfer", reason: "Transfer request",
+      when: "a transfer request is on file.",
+      needs: () => ["transferFiled"],
+      applies: p => p.transferFiled !== "none",
+      why: p => [
+        ["Transfer request filed " + fmtDate(p.transferFiled) + " (" + plural(-daysUntil(dateOf(p.transferFiled)), "day") + " ago)", "transferFiled"],
+        p.transferTo !== undefined && ["Requested school: " + p.transferTo, "transferTo"]
+      ],
+      step: () => "Meet with them about the request before it is decided."
+    },
+    {
+      id: "retire", reason: "Retirement window",
+      when: "a teacher is eligible to retire within the next 2 years, or already is.",
+      needs: () => ["retire"],
+      applies: p => p.retire !== "none" && daysUntil(monthEnd(p.retire)) <= 730,
+      why: p => [
+        [(daysUntil(monthEnd(p.retire)) < 0 ? "Eligible to retire since " : "Eligible to retire ") + fmtMonth(p.retire), "retire"],
+        p.service !== undefined && [p.service + " years of service", "service"]
+      ],
+      step: p => "Plan ahead for a possible " + (p.subject || "teaching") + " opening."
+    },
+    {
+      id: "load", reason: "Heavy teaching load",
+      when: "a teacher has 6 or more sections, or 4 or more different courses.",
+      needs: () => ["sections", "courses"],
+      applies: p => p.sections >= 6 || p.courses >= 4,
+      why: p => [
+        [p.sections + " sections this year", "sections"],
+        [p.courses + " different courses to prepare", "courses"]
+      ],
+      step: () => "Review this teacher's schedule for next year."
+    },
+    {
+      id: "contract", reason: "Contract renewal due",
+      when: "a probationary teacher's renewal hasn't been offered and the deadline is within 90 days.",
+      needs: p => p.contractType === undefined ? ["contractType"] : p.contractType !== "Probationary" ? [] : p.renewal === undefined ? ["renewal"] : p.renewal === "Not yet offered" ? ["renewBy"] : [],
+      applies: p => p.contractType === "Probationary" && p.renewal === "Not yet offered" && p.renewBy !== "none" && daysUntil(dateOf(p.renewBy)) <= 90,
+      why: p => {
+        const d = daysUntil(dateOf(p.renewBy));
+        return [
+          ["Probationary contract", "contractType"],
+          ["Renewal not yet offered", "renewal"],
+          ["Deadline " + fmtDate(p.renewBy) + (d < 0 ? " (passed)" : " (" + plural(d, "day") + " away)"), "renewBy"]
+        ];
+      },
+      step: () => "Decide on the renewal before the deadline."
+    },
+    {
+      id: "license", reason: "License expiring",
+      when: "a teacher's license expires within 12 months and no renewal is on file.",
+      needs: p => p.licenseExpires === undefined ? ["licenseExpires"] : daysUntil(monthEnd(p.licenseExpires)) <= 365 ? ["licenseRenewal"] : [],
+      applies: p => daysUntil(monthEnd(p.licenseExpires)) <= 365 && p.licenseRenewal === "None on file",
+      why: p => [
+        [(p.licenseType ? p.licenseType + " license" : "License") + (daysUntil(monthEnd(p.licenseExpires)) < 0 ? " expired " : " expires ") + fmtMonth(p.licenseExpires), "licenseExpires"],
+        ["No renewal on file", "licenseRenewal"]
+      ],
+      step: () => "Check that their license renewal is under way."
+    }
+  ],
+  candidate: [
+    {
+      id: "clicense", reason: "Candidate license",
+      when: "a candidate does not hold a standard license.",
+      needs: () => ["licenseType"],
+      applies: p => p.licenseType !== "Standard",
+      why: p => [
+        [p.licenseType + " license" + (p.licenseArea ? " in " + p.licenseArea : ""), "licenseType"],
+        p.licenseExpires !== undefined && ["License expires " + fmtMonth(p.licenseExpires), "licenseExpires"]
+      ],
+      step: () => "Confirm their path to a standard license before making an offer."
+    },
+    {
+      id: "late", reason: "Late start",
+      when: "a candidate can't start until after the opening's start date.",
+      needs: () => ["available", "openingStart"],
+      applies: p => dateOf(p.available) > dateOf(p.openingStart),
+      why: p => [
+        ["Available to start " + fmtDate(p.available), "available"],
+        ["Opening starts " + fmtDate(p.openingStart), "openingStart"]
+      ],
+      step: () => "Ask whether an earlier start is possible, and keep recruiting for this opening."
+    },
+    {
+      id: "stalled", reason: "No recent contact",
+      when: "a candidate hasn't been contacted in 21 days or more and hasn't accepted an offer.",
+      needs: () => ["stage", "lastContact"],
+      applies: p => p.stage !== "Offer accepted" && -daysUntil(dateOf(p.lastContact)) >= 21,
+      why: p => [
+        ["Last contact " + fmtDate(p.lastContact) + " (" + plural(-daysUntil(dateOf(p.lastContact)), "day") + " ago)", "lastContact"],
+        ["Stage: " + p.stage, "stage"]
+      ],
+      step: () => "Move them to the next step, or update them on timing."
+    }
+  ]
+};
+
+/* ==================================================================
+   STORAGE (this browser only). Wrapped so the app still works if
+   storage is blocked.
+================================================================== */
+const KEY = { data: "trs-data-v2", entered: "trs-entered-v2", status: "trs-status-v2" };
+const load = (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const drop = k => { try { localStorage.removeItem(k); } catch (e) {} };
+
+/* ==================================================================
+   BUILD RECORDS from spreadsheet rows (sample or imported)
+================================================================== */
+const slug = s => s.toLowerCase().replace(/^(mr|ms|mrs|dr)\.?\s+/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+function buildRecords(kind, rows, firstRowNumber) {
+  const fields = FIELDS[kind].filter(f => !f.derived);
+  const keyField = kind === "opening" ? "position" : "name";
+  const records = [], errors = [], used = {};
+  rows.forEach((raw, i) => {
+    const rowNo = firstRowNumber + i;
+    if (raw.every(c => c == null || String(c).trim() === "")) return;
+    const rec = {};
+    fields.forEach((f, j) => {
+      const r = validate(f, raw[j]);
+      if (r.error) errors.push("Row " + rowNo + ": " + f.label + " “" + String(raw[j]).trim() + "” " + r.error + ". Treated as missing.");
+      rec[f.k] = r.error ? undefined : r.value;
+    });
+    if (!rec[keyField]) { errors.push("Row " + rowNo + ": no " + FIELD[kind][keyField].label.toLowerCase() + ". Row skipped."); return; }
+    let id = slug(rec[keyField]) || kind;
+    if (used[id]) id += "-" + (++used[id]); else used[id] = 1;
+    rec.id = id;
+    records.push(rec);
+  });
+  return { records, errors };
+}
+
+function sampleData() {
+  return {
+    source: "sample",
+    teacher: buildRecords("teacher", SAMPLE.teacher, 2).records,
+    candidate: buildRecords("candidate", SAMPLE.candidate, 2).records,
+    opening: buildRecords("opening", SAMPLE.opening, 2).records,
+    imported: {}
+  };
+}
+
+/* ==================================================================
+   STATE: records + your entries + flag statuses -> people and flags
+================================================================== */
+let DATA = load(KEY.data, null) || sampleData();
+let ENTERED = load(KEY.entered, { teacher: {}, candidate: {} });
+let STATUS = load(KEY.status, {});
+let TEACHERS = [], CANDIDATES = [], OPENINGS = [], PEOPLE = [], FLAGS = [];
+
+function makePerson(kind, rec) {
+  const p = Object.assign({}, rec, { kind, src: {}, flags: [], missing: [] });
+  if (kind === "candidate") {
+    const posting = p.opening ? OPENINGS.find(o => o.position.toLowerCase() === p.opening.toLowerCase()) : null;
+    p.posting = posting || null;
+    if (posting && posting.start !== undefined) p.openingStart = posting.start;
+  }
+  const mine = (ENTERED[kind] || {})[rec.id] || {};
+  for (const k in mine) { p[k] = mine[k]; p.src[k] = "Entered by you"; }
+  RULES[kind].forEach(rule => {
+    const lacking = rule.needs(p).filter(k => p[k] === undefined);
+    if (lacking.length) { p.missing.push({ rule, fields: lacking }); return; }
+    if (!rule.applies(p)) return;
+    const key = p.id + ":" + rule.id;
+    p.flags.push({ key, rule, person: p, why: rule.why(p).filter(Boolean), step: rule.step(p), status: (STATUS[key] || {}).s || "open" });
+  });
+  return p;
+}
+
+function recompute() {
+  OPENINGS = DATA.opening.slice();
+  TEACHERS = DATA.teacher.map(r => makePerson("teacher", r));
+  CANDIDATES = DATA.candidate.map(r => makePerson("candidate", r));
+  PEOPLE = TEACHERS.concat(CANDIDATES);
+  FLAGS = PEOPLE.flatMap(p => p.flags);
+  const active = FLAGS.filter(f => f.status !== "resolved").length;
+  document.getElementById("c-flags").textContent = active;
+  document.getElementById("c-teachers").textContent = TEACHERS.length;
+  document.getElementById("c-candidates").textContent = CANDIDATES.length;
+  document.getElementById("c-openings").textContent = OPENINGS.length;
+  document.getElementById("banner").textContent = DATA.source === "sample"
+    ? "Sample district files · every person shown is made up"
+    : "Your district files · stored only in this browser on this computer";
+}
+
+/* ==================================================================
+   RENDERING HELPERS
+================================================================== */
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+const initials = name => name.replace(/^(Mr|Ms|Mrs|Dr)\.?\s+/, "").split(/[\s.]+/).filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+const lastName = n => n.trim().split(/\s+/).pop().toLowerCase();
+const byLast = (a, b) => lastName(a.name).localeCompare(lastName(b.name));
+const activeFlags = p => p.flags.filter(f => f.status !== "resolved");
+const STATUS_LABEL = { open: "Open", progress: "In progress", resolved: "Resolved" };
+const roleOf = p => p.kind === "teacher" ? (p.subject || "Subject not in files") + " · Current teacher" : (p.opening || "Opening not in files") + " · Candidate";
+const srcOf = (p, k) => p.src[k] || FIELD[p.kind][k].src;
+const hero = (eyebrow, title, sub) => `<div class="hero"><div class="wrap"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1>${sub ? `<p class="subhead">${sub}</p>` : ""}</div></div>`;
+
+function flagChips(p) {
+  const act = activeFlags(p);
+  if (act.length) return act.map(f => `<span class="flag ${f.status === "progress" ? "prog" : ""}" title="${STATUS_LABEL[f.status]}">${esc(f.rule.reason)}</span>`).join("");
+  if (p.missing.length) return `<span class="missing">Missing information</span>`;
+  if (p.flags.length) return `<span class="ok">All flags resolved</span>`;
+  return `<span class="ok">No flags</span>`;
+}
+
+const main = document.getElementById("main");
+const ui = { q: "", flaggedOnly: false, dept: "", tab: "open", notice: null };
+
+function setNav(view) {
+  document.querySelectorAll(".nav").forEach(b => {
+    const on = b.dataset.view === view;
+    b.classList.toggle("on", on);
+    if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+}
+
+function bindPersonLinks(root) {
+  root.querySelectorAll("[data-id]").forEach(el => {
+    el.addEventListener("click", () => go("person/" + el.dataset.id));
+    if (el.tagName === "TR") el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("person/" + el.dataset.id); } });
+  });
+}
+
+const departments = () => [...new Set(TEACHERS.map(t => t.dept).filter(Boolean))].sort();
+
+/* ==================================================================
+   FLAGS
+================================================================== */
+function renderFlags() {
+  setNav("flags");
+  const counts = { open: 0, progress: 0, resolved: 0 };
+  FLAGS.forEach(f => counts[f.status]++);
+  const inScope = f => !ui.dept || (ui.dept === "__cand" ? f.person.kind === "candidate" : f.person.dept === ui.dept);
+  const list = FLAGS.filter(f => f.status === ui.tab && inScope(f));
+  const byReason = {};
+  list.forEach(f => byReason[f.rule.reason] = (byReason[f.rule.reason] || 0) + 1);
+  const reasons = Object.entries(byReason).sort((a, b) => b[1] - a[1]);
+  const max = reasons.length ? reasons[0][1] : 1;
+  const missing = PEOPLE.filter(p => p.missing.length);
+  main.innerHTML = hero("Who may leave", "Flags", `${counts.open} open · ${counts.progress} in progress · ${TEACHERS.length} teachers and ${CANDIDATES.length} candidates checked`) + `
+    <div class="wrap content">
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Flag status">
+        ${["open", "progress", "resolved"].map(s => `<button data-tab="${s}" aria-pressed="${ui.tab === s}">${STATUS_LABEL[s]} (${counts[s]})</button>`).join("")}
+      </div>
+      <select class="select" id="dept" aria-label="Filter by department">
+        <option value="">All departments</option>
+        ${departments().map(d => `<option ${ui.dept === d ? "selected" : ""}>${esc(d)}</option>`).join("")}
+        <option value="__cand" ${ui.dept === "__cand" ? "selected" : ""}>Candidates only</option>
+      </select>
+    </div>
+    <div class="flagsgrid">
+      <section aria-label="Flags by reason">
+        <h2 class="sec">By reason</h2>
+        ${reasons.length ? reasons.map(([r, n], i) => `
+          <div class="bar ${i === 0 ? "top" : ""}">
+            <div class="bl"><span>${esc(r)}</span><b>${n}</b></div>
+            <div class="bt"><div class="bf" style="width:${Math.round(n / max * 100)}%"></div></div>
+          </div>`).join("") : `<p class="empty" style="padding-left:0">Nothing to count.</p>`}
+      </section>
+      <section aria-label="${STATUS_LABEL[ui.tab]} flags">
+        <h2 class="sec">${STATUS_LABEL[ui.tab]} flags</h2>
+        <div id="flaglist">${list.length ? list.map(f => `
+          <button class="orow" data-id="${esc(f.person.id)}">
+            <span class="n">${esc(f.person.name)}<small>${esc(roleOf(f.person))}</small></span>
+            <span class="reason ${f.status === "resolved" ? "done" : ""}">${esc(f.rule.reason)}${(STATUS[f.key] || {}).note ? `<small>Has notes</small>` : ""}</span>
+          </button>`).join("") : `<p class="empty" style="padding-left:0">No ${STATUS_LABEL[ui.tab].toLowerCase()} flags${ui.dept ? " in this group" : ""}.</p>`}</div>
+        ${missing.length && ui.tab === "open" ? `<div class="note"><b>Missing information:</b> <span id="misslist">${missing.map(p => `<button class="linkish" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join(", ")}</span>. Some checks could not be run because the files leave something out.</div>` : ""}
+      </section>
+    </div>
+    </div>`;
+  main.querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => { ui.tab = b.dataset.tab; renderFlags(); }));
+  document.getElementById("dept").addEventListener("change", e => { ui.dept = e.target.value; renderFlags(); });
+  bindPersonLinks(main.querySelector(".flagsgrid"));
+}
+
+/* ==================================================================
+   TEACHERS / CANDIDATES LISTS
+================================================================== */
+function listPage(kind) {
+  const isT = kind === "teacher";
+  const all = isT ? TEACHERS : CANDIDATES;
+  setNav(isT ? "teachers" : "candidates");
+  const flagged = all.filter(p => activeFlags(p).length).length;
+  main.innerHTML = hero(isT ? "Your staff" : "Hiring", isT ? "Current teachers" : "Prospective hires", `${plural(all.length, isT ? "teacher" : "candidate")} · ${flagged} flagged`) + `
+    <div class="wrap content">
+    <div class="tools">
+      <input class="search" type="search" id="q" placeholder="Search by name, ${isT ? "subject" : "opening"} or flag" aria-label="Search" value="${esc(ui.q)}">
+      ${isT ? `<select class="select" id="dept" aria-label="Filter by department"><option value="">All departments</option>${departments().map(d => `<option ${ui.dept === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>` : ""}
+      <label class="check"><input type="checkbox" id="fo" ${ui.flaggedOnly ? "checked" : ""}> Show flagged only</label>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr>${isT ? "<th>Name</th><th>Subject</th><th>Year in district</th><th>Flags</th>" : "<th>Name</th><th>Opening</th><th>Stage</th><th>Last contact</th><th>Flags</th>"}</tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    </div>`;
+  const fill = () => {
+    const q = ui.q.trim().toLowerCase();
+    const list = all.filter(p =>
+      (!ui.flaggedOnly || activeFlags(p).length) &&
+      (!isT || !ui.dept || ui.dept === "__cand" || p.dept === ui.dept) &&
+      (!q || [p.name, p.subject, p.dept, p.opening, p.stage, ...p.flags.map(f => f.rule.reason)].filter(Boolean).join(" ").toLowerCase().includes(q))
+    ).sort((a, b) => activeFlags(b).length - activeFlags(a).length || b.missing.length - a.missing.length || byLast(a, b));
+    const dash = `<span class="ok">—</span>`;
+    document.getElementById("rows").innerHTML = list.length ? list.map(p => `
+      <tr data-id="${esc(p.id)}" tabindex="0" class="${activeFlags(p).length ? "flagged" : ""}">
+        <td class="nm">${esc(p.name)}</td>
+        ${isT
+          ? `<td>${p.subject ? esc(p.subject) : dash}</td><td class="num">${p.year !== undefined ? ord(p.year) : dash}</td>`
+          : `<td>${p.opening ? esc(p.opening) : dash}</td><td>${p.stage ? esc(p.stage) : dash}</td><td class="num">${p.lastContact ? esc(fmtDate(p.lastContact)) : dash}</td>`}
+        <td>${flagChips(p)}</td>
+      </tr>`).join("") : `<tr><td colspan="5" class="empty">No ${isT ? "teachers" : "candidates"} match.</td></tr>`;
+    bindPersonLinks(document.getElementById("rows"));
+  };
+  document.getElementById("q").addEventListener("input", e => { ui.q = e.target.value; fill(); });
+  document.getElementById("fo").addEventListener("change", e => { ui.flaggedOnly = e.target.checked; fill(); });
+  if (isT) document.getElementById("dept").addEventListener("change", e => { ui.dept = e.target.value; fill(); });
+  fill();
+}
+
+/* ==================================================================
+   OPENINGS
+================================================================== */
+function renderOpenings() {
+  setNav("openings");
+  const stageRank = s => s ? STAGES.indexOf(s) : -1;
+  const cards = OPENINGS.map(o => {
+    const cands = CANDIDATES.filter(c => c.posting === o).sort((a, b) => stageRank(b.stage) - stageRank(a.stage));
+    return { o, cands };
+  }).sort((a, b) => a.cands.length - b.cands.length || (a.o.posted || "").localeCompare(b.o.posted || ""));
+  const unmatched = CANDIDATES.filter(c => !c.posting);
+  const possible = FLAGS.filter(f => (f.rule.id === "transfer" || f.rule.id === "retire") && f.status !== "resolved");
+  main.innerHTML = hero("Hiring", "Openings", `${plural(OPENINGS.length, "posted opening")} · ${cards.filter(c => !c.cands.length).length} with no candidates · ${possible.length} possible from flags`) + `
+    <div class="wrap content">
+    <h2 class="sec">Posted openings</h2>
+    <div class="ocards">${cards.map(({ o, cands }) => {
+      const open = o.posted ? -daysUntil(dateOf(o.posted)) : null;
+      const meta = [o.posted && "Posted " + fmtDate(o.posted), o.start && "Starts " + fmtDate(o.start), o.reason].filter(Boolean).join(" · ");
+      return `<article class="ocard ${cands.length ? "" : "cold"}">
+        <div class="ohead"><h2>${esc(o.position)}</h2>${open !== null ? `<span class="days">Open ${plural(open, "day")}</span>` : ""}</div>
+        <p class="meta">${esc(meta || "Details not in files")}</p>
+        ${cands.length ? `<ul class="clist">${cands.map(c => `<li><button data-id="${esc(c.id)}"><span class="cn">${esc(c.name)}<small>${esc(c.stage || "Stage not in files")}</small></span><span>${activeFlags(c).map(f => `<span class="flag">${esc(f.rule.reason)}</span>`).join("")}</span></button></li>`).join("")}</ul>`
+          : `<p class="nocand">No candidates yet.</p>`}
+      </article>`;
+    }).join("")}</div>
+    ${possible.length ? `
+      <div class="spaced"></div><h2 class="sec">Possible openings, from flags</h2>
+      <div>${possible.map(f => `
+        <button class="orow" data-id="${esc(f.person.id)}">
+          <span class="n">${esc(f.person.subject || "Subject not in files")}<small>${esc(f.person.name)} · ${esc(f.why[0][0])}</small></span>
+          <span class="reason">${esc(f.rule.reason)}</span>
+        </button>`).join("")}</div>` : ""}
+    ${unmatched.length ? `<div class="note"><b>Not matched to a posted opening:</b> ${unmatched.map(c => `<button class="linkish" data-id="${esc(c.id)}">${esc(c.name)}</button>`).join(", ")}. The opening on their application doesn't match any job posting.</div>` : ""}
+    </div>`;
+  bindPersonLinks(main);
+}
+
+/* ==================================================================
+   PERSON PAGE
+================================================================== */
+function inputFor(p, f) {
+  const id = "in-" + f.k;
+  if (f.type === "choice") return `<select id="${id}" data-k="${f.k}"><option value="">Choose…</option>${f.options.map(o => `<option>${esc(o)}</option>`).join("")}</select>`;
+  const ph = { text: "", int: "Number", month: "YYYY-MM", date: "YYYY-MM-DD", monthOrNone: "YYYY-MM, or none", dateOrNone: "YYYY-MM-DD, or none", textOrNone: "Name, or none" }[f.type] || "";
+  return `<input id="${id}" data-k="${f.k}" placeholder="${ph}" ${f.type === "int" ? 'inputmode="numeric"' : ""}>`;
+}
+
+function renderPerson(id, keepScroll) {
+  const p = PEOPLE.find(x => x.id === id);
+  if (!p) return go("flags");
+  const listView = p.kind === "teacher" ? "teachers" : "candidates";
+  setNav(listView);
+  const act = activeFlags(p);
+  const badge = act.length
+    ? `<span class="flag">${p.kind === "teacher" ? "Flagged: may leave" : "Flagged: check before offer"}</span>`
+    : p.flags.length ? `<span class="clear done">All flags resolved</span>` : `<span class="clear">${p.missing.length ? "Missing information" : "No flags"}</span>`;
+  const missFields = [...new Set(p.missing.flatMap(m => m.fields))].map(k => FIELD[p.kind][k]);
+  const fileFields = FIELDS[p.kind].filter(f => f.k !== "name");
+  const y = window.scrollY;
+  const detailLine = p.kind === "teacher"
+    ? [p.subject, p.dept, "Westfield High School"].filter(Boolean).join(" · ")
+    : [p.opening ? "Applying for " + p.opening : null, p.stage, "Westfield High School"].filter(Boolean).join(" · ");
+  main.innerHTML = `
+    <div class="hero"><div class="wrap">
+      <button class="back" id="back">← Back</button>
+      <div class="phead">
+        <div class="av" aria-hidden="true">${esc(initials(p.name))}</div>
+        <div class="who">
+          <p class="eyebrow">${p.kind === "teacher" ? "Current teacher" : "Prospective hire"}</p>
+          <h1>${esc(p.name)}</h1>
+          <p class="subhead">${esc(detailLine)}</p>
+        </div>
+        <div class="pbadge">
+          ${badge}
+          ${p.kind === "candidate" && p.posting ? `<button class="linkish" id="toopen">See this opening</button>` : ""}
+        </div>
+      </div>
+    </div></div>
+    <div class="wrap content">
+      <div class="pbody">
+        ${p.flags.map(f => {
+          const st = STATUS[f.key] || {};
+          return `<section class="fblock ${f.status === "resolved" ? "resolved" : ""}" data-key="${esc(f.key)}">
+            <div class="fhead">
+              <div><p class="eyebrow">Why this flag</p><h2>${esc(f.rule.reason)}</h2></div>
+              <div class="seg small" role="group" aria-label="Status of ${esc(f.rule.reason)}">
+                ${["open", "progress", "resolved"].map(s => `<button data-s="${s}" aria-pressed="${f.status === s}">${STATUS_LABEL[s]}</button>`).join("")}
+              </div>
+            </div>
+            <p class="when">Flagged when ${esc(f.rule.when)}</p>
+            <ul class="why">${f.why.map(([fact, k]) => `<li><span>${esc(fact)}</span><span class="src ${p.src[k] ? "you" : ""}">${esc(srcOf(p, k))}</span></li>`).join("")}</ul>
+            <div class="step"><p class="label">Possible next step</p><p>${esc(f.step)}</p></div>
+            <div class="notes">
+              <label for="note-${esc(f.key)}">Your notes</label>
+              <textarea id="note-${esc(f.key)}" placeholder="What you've done or decided. Saved in this browser only.">${esc(st.note || "")}</textarea>
+              <small class="saved">${st.at ? "Last updated " + esc(fmtDate(st.at)) : ""}</small>
+            </div>
+          </section>`;
+        }).join("")}
+        ${p.missing.length ? `
+          <section class="ask" id="ask">
+            <p class="label">Missing from the files</p>
+            <p>${p.missing.length === 1 ? "This check was" : "These checks were"} not run: <b>${p.missing.map(m => esc(m.rule.reason)).join(", ")}</b>. The app won't guess. Add what you know below, or update the source records.</p>
+            <div class="fields">${missFields.map(f => `<label for="in-${f.k}">${esc(f.label)}<small>${esc(f.src)}</small>${inputFor(p, f)}</label>`).join("")}</div>
+            <button class="btn" id="savemiss">Save and re-check</button>
+            <p class="err" id="misserr" role="alert"></p>
+          </section>` : ""}
+        ${!p.flags.length && !p.missing.length ? `<section class="fblock"><h2 class="sec">Checks</h2><p style="margin:0">All ${RULES[p.kind].length} checks ran. Nothing in this file matches a flag.</p></section>` : ""}
+        <section>
+          <h2 class="sec">What's in the file</h2>
+          <dl class="file">${fileFields.map(f => {
+            const v = show(f, p[f.k]);
+            return `<div><dt>${esc(f.label)}</dt><dd class="${v === null ? "gone" : v === "None on file" ? "none" : ""}">${esc(v === null ? "Not in files" : v)}</dd><dd class="src ${p.src[f.k] ? "you" : ""}">${esc(srcOf(p, f.k))}</dd></div>`;
+          }).join("")}</dl>
+          ${Object.keys(p.src).length ? `<p style="margin-top:14px"><button class="linkish" id="undo">Remove what you entered for ${esc(p.name)}</button></p>` : ""}
+        </section>
+      </div>
+    </div>`;
+
+  document.getElementById("back").addEventListener("click", () => history.length > 1 ? history.back() : go(listView));
+  const toOpen = document.getElementById("toopen");
+  if (toOpen) toOpen.addEventListener("click", () => go("openings"));
+
+  main.querySelectorAll(".fblock[data-key]").forEach(block => {
+    const key = block.dataset.key;
+    block.querySelectorAll("[data-s]").forEach(b => b.addEventListener("click", () => {
+      STATUS[key] = Object.assign({}, STATUS[key], { s: b.dataset.s, at: isoToday() });
+      save(KEY.status, STATUS); recompute(); renderPerson(id, true);
+    }));
+    const ta = block.querySelector("textarea"), saved = block.querySelector(".saved");
+    ta.addEventListener("input", () => {
+      STATUS[key] = Object.assign({ s: "open" }, STATUS[key], { note: ta.value, at: isoToday() });
+      save(KEY.status, STATUS);
+      saved.textContent = "Saved";
+    });
+  });
+
+  const sm = document.getElementById("savemiss");
+  if (sm) sm.addEventListener("click", () => {
+    const errs = [], vals = {};
+    missFields.forEach(f => {
+      const el = document.getElementById("in-" + f.k);
+      if (!el.value.trim()) return;
+      const r = validate(f, el.value);
+      if (r.error) errs.push(f.label + " " + r.error + ".");
+      else vals[f.k] = r.value;
+    });
+    if (errs.length) { document.getElementById("misserr").textContent = errs.join(" "); return; }
+    if (!Object.keys(vals).length) { document.getElementById("misserr").textContent = "Fill in at least one field."; return; }
+    ENTERED[p.kind] = ENTERED[p.kind] || {};
+    ENTERED[p.kind][p.id] = Object.assign({}, ENTERED[p.kind][p.id], vals);
+    save(KEY.entered, ENTERED); recompute(); renderPerson(id, true);
+  });
+  const undo = document.getElementById("undo");
+  if (undo) undo.addEventListener("click", () => {
+    delete ENTERED[p.kind][p.id];
+    save(KEY.entered, ENTERED); recompute(); renderPerson(id, true);
+  });
+  if (keepScroll) window.scrollTo(0, y);
+}
+const isoToday = () => TODAY.getFullYear() + "-" + pad2(TODAY.getMonth() + 1) + "-" + pad2(TODAY.getDate());
+
+/* ==================================================================
+   DISTRICT FILES (import / templates)
+================================================================== */
+function parseCSV(text) {
+  text = text.replace(/^﻿/, "");
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += ch;
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+const csvCell = v => { const s = v == null ? "" : String(v); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+function templateCSV(kind) {
+  const fields = FIELDS[kind].filter(f => !f.derived);
+  return "﻿" + [fields.map(f => f.csv), ...SAMPLE[kind]].map(r => r.map(csvCell).join(",")).join("\r\n");
+}
+function download(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function importFile(kind, text, fileName) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) return { ok: false, msg: fileName + " has no rows to read." };
+  const header = rows[0].map(h => h.trim().toLowerCase().replace(/\s+/g, "_"));
+  const fields = FIELDS[kind].filter(f => !f.derived);
+  const keyCol = kind === "opening" ? "position" : "name";
+  if (!header.includes(keyCol)) return { ok: false, msg: fileName + " needs a “" + keyCol + "” column. Download the template to see the expected columns." };
+  const colIdx = fields.map(f => header.indexOf(f.csv));
+  const notFound = fields.filter((f, i) => colIdx[i] < 0).map(f => f.csv);
+  const mapped = rows.slice(1).map(r => colIdx.map(i => i < 0 ? "" : r[i]));
+  const { records, errors } = buildRecords(kind, mapped, 2);
+  if (!records.length) return { ok: false, msg: fileName + " has no usable rows.", errors };
+  DATA[kind] = records;
+  DATA.source = "import";
+  DATA.imported = Object.assign({}, DATA.imported, { [kind]: { file: fileName, at: isoToday() } });
+  if (ENTERED[kind]) ENTERED[kind] = {};
+  save(KEY.data, DATA); save(KEY.entered, ENTERED);
+  const notes = errors.slice();
+  if (notFound.length) notes.unshift("Columns not found, so treated as missing: " + notFound.join(", ") + ".");
+  return { ok: true, msg: "Read " + plural(records.length, "row") + " from " + fileName + ".", errors: notes };
+}
+
+function renderFiles() {
+  setNav("files");
+  const FILES = [
+    { kind: "teacher",   title: "Teachers",          desc: "Personnel, pension, schedule, mentoring, HR, contract and license records, one row per teacher." },
+    { kind: "candidate", title: "Candidates",        desc: "Applications and license lookups, one row per candidate." },
+    { kind: "opening",   title: "Job postings",      desc: "Open positions, one row per posting." }
+  ];
+  const n = ui.notice;
+  main.innerHTML = hero("Where the information comes from", "District files", DATA.source === "sample" ? "Using sample files. Every person in them is made up." : "Using your files. They stay in this browser on this computer and are never sent anywhere.") + `
+    <div class="wrap content">
+    <h2 class="sec">Your files</h2>
+    ${FILES.map(f => {
+      const imp = (DATA.imported || {})[f.kind];
+      return `<div class="filerow">
+        <div><h2>${f.title}</h2><p>${f.desc}</p><p><b>${plural(DATA[f.kind].length, "row")}</b> · ${imp ? "from " + esc(imp.file) + ", " + esc(fmtDate(imp.at)) : "sample"}</p></div>
+        <div class="acts">
+          <input type="file" id="up-${f.kind}" accept=".csv,text/csv" data-kind="${f.kind}">
+          <label class="btn" for="up-${f.kind}">Upload CSV</label>
+          <button class="btn ghost" data-tpl="${f.kind}">Download template</button>
+        </div>
+      </div>`;
+    }).join("")}
+    ${n ? `<div class="result ${n.ok && !(n.errors || []).length ? "" : "warn"}" role="status"><b>${esc(n.msg)}</b>${(n.errors || []).length ? `<ul>${n.errors.slice(0, 8).map(e => `<li>${esc(e)}</li>`).join("")}${n.errors.length > 8 ? `<li>…and ${n.errors.length - 8} more.</li>` : ""}</ul>` : ""}</div>` : ""}
+    <div class="howto">
+      <div class="spaced"></div><h2 class="sec">How to prepare a file</h2>
+      <ul>
+        <li>Start from the template. It has the right columns and shows the sample rows as examples.</li>
+        <li>Leave a cell blank when the information isn't in your records. The app will say so and ask, instead of guessing.</li>
+        <li>Write <code>none</code> when the records say there isn't one, for example no mentor or no transfer request.</li>
+        <li>Dates can be <code>2027-08-18</code> or <code>8/18/2027</code>. Months can be <code>2028-06</code> or <code>6/2028</code>.</li>
+        <li>A candidate's <code>opening</code> should match a posting's <code>position</code> exactly, so they appear under that opening.</li>
+      </ul>
+      ${DATA.source !== "sample" ? `<p style="margin-top:20px"><button class="btn ghost" id="restore">Go back to the sample files</button></p>` : ""}
+    </div>
+    </div>`;
+  ui.notice = null;
+  main.querySelectorAll("[data-tpl]").forEach(b => b.addEventListener("click", () => download(b.dataset.tpl + "s-template.csv", templateCSV(b.dataset.tpl))));
+  main.querySelectorAll("input[type=file]").forEach(inp => inp.addEventListener("change", () => {
+    const file = inp.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { ui.notice = importFile(inp.dataset.kind, String(reader.result), file.name); recompute(); renderFiles(); };
+    reader.onerror = () => { ui.notice = { ok: false, msg: "Couldn't read " + file.name + "." }; renderFiles(); };
+    reader.readAsText(file);
+  }));
+  const r = document.getElementById("restore");
+  if (r) r.addEventListener("click", () => {
+    if (!confirm("Remove your imported files and anything you entered, and go back to the sample files?")) return;
+    drop(KEY.data); drop(KEY.entered);
+    DATA = sampleData(); ENTERED = { teacher: {}, candidate: {} };
+    recompute(); ui.notice = { ok: true, msg: "Back to the sample files." }; renderFiles();
+  });
+}
+
+/* ==================================================================
+   ROUTING (so the browser Back button works)
+================================================================== */
+function go(route) { if (location.hash === "#/" + route) routeNow(); else location.hash = "#/" + route; }
+function routeNow() {
+  const h = location.hash.replace(/^#\//, "") || "flags";
+  const [view, id] = h.split("/");
+  if (view === "teachers") listPage("teacher");
+  else if (view === "candidates") listPage("candidate");
+  else if (view === "openings") renderOpenings();
+  else if (view === "files") renderFiles();
+  else if (view === "person") renderPerson(decodeURIComponent(id || ""));
+  else renderFlags();
+  main.focus({ preventScroll: true });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".nav").forEach(b => b.addEventListener("click", () => { ui.q = ""; ui.flaggedOnly = false; go(b.dataset.view); }));
+window.addEventListener("hashchange", routeNow);
+recompute();
+routeNow();
+</script>
+</body>
+</html>
