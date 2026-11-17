@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retention Ad (30s)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#14294b; --navy-deep:#0d1d37; --gold:#c4972c; --gold-soft:#f7f0de;
+  --ink:#1d2533; --muted:#566070; --line:#dde2ea; --band:#f3f5f8;
+  --head:"Merriweather",Georgia,"Times New Roman",serif;
+  --body:"Source Sans 3","Segoe UI",Arial,sans-serif;
+}
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:var(--band);font-family:var(--body);color:var(--ink)}
+.scene{position:absolute;inset:0;overflow:hidden;visibility:hidden}
+.cam{position:absolute;inset:0;transform-origin:50% 50%}
+
+/* kinetic type */
+.kin .w{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .02em .14em;margin-bottom:-.14em}
+.kin .w>span{display:inline-block}
+.kin .g{color:var(--gold)}
+.eyebrow{font:700 22px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+
+/* wipe */
+#wipe{position:absolute;top:-200px;height:1480px;left:0;width:3000px;z-index:50;transform:translateX(2400px) skewX(-14deg);pointer-events:none}
+#wipe .gb{position:absolute;left:-170px;top:0;bottom:0;width:170px;background:var(--gold)}
+#wipe .nb{position:absolute;left:0;top:0;bottom:0;right:0;background:var(--navy-deep)}
+
+/* ---------- A: calendar ---------- */
+#sA{background:linear-gradient(180deg,#f7f9fc,#eaeff6)}
+#capA{position:absolute;left:110px;top:70px;font:900 74px/1.12 var(--head);color:var(--navy)}
+.tally{position:absolute;right:110px;top:96px;display:flex;gap:18px}
+.tally div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 22px;font:600 22px/1 var(--body);color:var(--muted)}
+.tally b{font:700 30px/1 var(--head);color:var(--navy);margin-left:10px}
+.months{position:absolute;left:110px;top:300px;display:flex;gap:40px;transform-origin:50% 0}
+.month{width:540px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 22px rgba(20,41,75,.07);padding:20px 18px 14px;box-sizing:border-box}
+.month h3{margin:0 0 12px 6px;font:700 28px/1 var(--head);color:var(--navy)}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,72px)}
+.dow span{font:600 15px/1 var(--body);color:var(--muted);text-align:center;padding-bottom:10px;text-transform:uppercase}
+.cell{height:84px;border-top:1px solid var(--line);position:relative;box-sizing:border-box}
+.cell .n{position:absolute;left:8px;top:6px;font:600 16px/1 var(--body)}
+.cell.we .n{color:#a3abb8}
+.pill{position:absolute;left:4px;right:4px;bottom:7px;height:38px;background:var(--gold-soft);border-left:4px solid var(--gold);border-radius:4px;font:700 12.5px/1.15 var(--body);color:var(--navy);padding:4px 0 0 5px;box-sizing:border-box;opacity:0;transform-origin:30% 50%}
+.pill small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
+
+/* ---------- B/C: file wall ---------- */
+#sB{background:radial-gradient(ellipse at 65% 50%,#1c3866 0%,var(--navy) 50%,var(--navy-deep) 100%)}
+.capB{position:absolute;left:110px;top:300px;font:900 80px/1.14 var(--head);color:#fff}
+#stat{position:absolute;left:110px;top:590px;display:flex;flex-direction:column;align-items:flex-start;gap:14px;color:#c9d3e3;font:600 28px/1 var(--body)}
+#stat b{font:900 120px/1 var(--head);color:var(--gold)}
+#statL{position:relative;height:30px;width:400px}
+#statL span{position:absolute;left:0;bottom:0;white-space:nowrap}
+#wall{position:absolute;left:860px;top:170px;width:950px;height:740px}
+.fc{position:absolute;width:106px;height:111px;background:#fff;border-radius:9px;box-sizing:border-box;padding:12px 10px;opacity:0;overflow:hidden}
+.fc .av{width:34px;height:34px;border-radius:50%;background:#dfe4ec;color:var(--navy);font:700 13px/34px var(--body);text-align:center}
+.fc .nm{margin-top:10px;font:700 14px/1.1 var(--body);color:var(--navy);white-space:nowrap}
+.fc .sb{margin-top:4px;font:400 12.5px/1 var(--body);color:var(--muted)}
+.fc .tk{position:absolute;right:9px;top:10px;width:18px;height:18px;border-radius:50%;background:#e4e8ef;opacity:0}
+.fc .tk::after{content:"";position:absolute;left:6px;top:3px;width:4px;height:8px;border:solid #566070;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.fc .fl{position:absolute;right:7px;top:8px;width:24px;height:24px;border-radius:50%;background:var(--navy-deep);transform:scale(0)}
+.fc .fl::after{content:"";position:absolute;left:8px;top:6px;width:2px;height:12px;background:var(--gold)}
+.fc .fl::before{content:"";position:absolute;left:10px;top:6px;border-left:8px solid var(--gold);border-top:4px solid transparent;border-bottom:4px solid transparent}
+#beam{position:absolute;top:140px;height:800px;width:6px;left:0;background:var(--gold);box-shadow:0 0 30px 10px rgba(196,151,44,.45);border-radius:3px;opacity:0}
+
+/* ---------- D: flag types ---------- */
+#sD{background:linear-gradient(180deg,#f7f9fc,#eaeff6)}
+#sD .eyebrow{position:absolute;left:110px;top:110px;font-size:26px}
+#dCount{position:absolute;right:110px;top:104px;font:700 30px/1 var(--head);color:var(--navy)}
+#dCount span{color:#a3abb8}
+.dTitle{position:absolute;left:110px;top:360px;width:840px;font:900 104px/1.1 var(--head);color:var(--navy)}
+.fcard{position:absolute;left:1010px;top:260px;width:800px;background:#fff;border-radius:16px;border-top:10px solid var(--gold);box-shadow:0 30px 70px rgba(13,29,55,.16);padding:40px 46px 36px;box-sizing:border-box;opacity:0}
+.fc-top{display:flex;align-items:center;gap:22px;padding-bottom:26px;border-bottom:2px solid var(--line)}
+.fc-top .av{width:78px;height:78px;border-radius:50%;background:var(--navy);color:#fff;font:700 28px/78px var(--body);text-align:center;flex:none}
+.fc-name{font:700 36px/1.1 var(--head);color:var(--navy)}
+.fc-role{margin-top:6px;font:600 21px/1 var(--body);color:var(--muted)}
+.chip{margin-left:auto;background:var(--gold);color:var(--navy-deep);font:700 19px/1 var(--body);padding:11px 16px;border-radius:7px;white-space:nowrap}
+.fcard ul{list-style:none;margin:10px 0 0;padding:0}
+.fcard li{display:flex;align-items:center;gap:16px;font:600 30px/1.2 var(--body);color:var(--ink);padding:18px 0;border-bottom:1px solid var(--line)}
+.fcard li::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--gold);flex:none}
+.fc-src{margin-top:22px;font:600 19px/1 var(--body);color:var(--muted);letter-spacing:.04em}
+.fc-src b{color:var(--navy)}
+#dProg{position:absolute;left:110px;right:110px;bottom:90px;display:flex;gap:14px}
+#dProg div{flex:1;height:6px;background:#d6dce6;border-radius:3px;overflow:hidden}
+#dProg i{display:block;height:100%;width:0;background:var(--navy)}
+
+/* ---------- E: app tour ---------- */
+#sE{background:radial-gradient(ellipse at 50% 40%,#f7f9fc,#e2e8f0)}
+.capE{position:absolute;left:0;right:0;top:62px;text-align:center;font:900 62px/1.1 var(--head);color:var(--navy)}
+.win{position:absolute;left:160px;top:190px;width:1600px;height:830px;background:#fff;border-radius:14px;box-shadow:0 30px 80px rgba(13,29,55,.18),0 2px 6px rgba(13,29,55,.08);overflow:hidden}
+.topbar{height:72px;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 34px;color:#fff}
+.topbar .brand{font:700 25px/1 var(--head)}
+.topbar .brand span{display:inline-block;width:14px;height:14px;background:var(--gold);border-radius:3px;margin-right:14px;vertical-align:1px}
+.topbar .who{font:600 19px/1 var(--body);color:#c9d3e3}
+.side{position:absolute;left:0;top:72px;bottom:0;width:260px;background:var(--band);border-right:1px solid var(--line)}
+#ind{position:absolute;left:0;width:260px;height:56px;background:#fff;border-left:5px solid var(--gold);box-sizing:border-box}
+.nav{position:absolute;left:0;width:260px;height:56px;padding:0 24px 0 29px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;font:600 21px/1 var(--body);color:var(--muted)}
+.nav.on{color:var(--navy);font-weight:700}
+.badge{min-width:30px;height:30px;border-radius:15px;background:var(--gold);color:var(--navy-deep);font:700 17px/30px var(--body);text-align:center}
+.main{position:absolute;left:260px;top:72px;right:0;bottom:0}
+.view{position:absolute;inset:0;padding:40px 48px;box-sizing:border-box;opacity:0}
+.view h2{margin:0;font:700 40px/1.1 var(--head);color:var(--navy)}
+.view .sub{margin:10px 0 28px;font:600 21px/1 var(--body);color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:400 22px/1 var(--body)}
+th{text-align:left;font:700 15px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 16px 14px;border-bottom:2px solid var(--line)}
+td{padding:0 16px;height:70px;border-bottom:1px solid var(--line)}
+td.nm{font-weight:700;color:var(--navy)}
+.ok{color:#8a93a3;font-weight:600}
+.ok::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:#c3cad6;margin-right:10px;vertical-align:1px}
+.flag{display:inline-block;background:var(--gold);color:var(--navy-deep);font:700 18px/1 var(--body);padding:9px 14px;border-radius:6px}
+.flag::before{content:"\25B2";font-size:12px;margin-right:8px;vertical-align:2px}
+tr.hl td{background:var(--gold-soft)}
+.cols{display:flex;gap:60px}
+.bars{width:480px}
+.bars h5,.olist h5{margin:0 0 18px;font:700 15px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.bar{margin-bottom:22px}
+.bar .bl{display:flex;justify-content:space-between;font:600 21px/1 var(--body);color:var(--ink);margin-bottom:9px}
+.bar .bl b{font:700 22px/1 var(--head);color:var(--navy)}
+.bar .bt{height:16px;border-radius:8px;background:var(--band)}
+.bar .bf{height:100%;border-radius:8px;background:var(--navy);width:0}
+.bar.top .bf{background:var(--gold)}
+.olist{flex:1}
+.orow{display:flex;align-items:center;justify-content:space-between;height:66px;border-bottom:1px solid var(--line);padding:0 14px;font:700 22px/1 var(--body);color:var(--navy)}
+.orow span.r{font:600 18px/1 var(--body);color:var(--navy-deep);background:var(--gold-soft);border-left:4px solid var(--gold);padding:8px 12px;border-radius:4px}
+.orow.hot{background:var(--gold-soft)}
+.prof{display:flex;gap:44px;margin-top:6px}
+.pcard{width:360px;background:var(--band);border-radius:14px;padding:36px 30px;box-sizing:border-box;text-align:center}
+.pcard .av{width:130px;height:130px;border-radius:50%;background:var(--navy);color:#fff;font:700 46px/130px var(--body);margin:0 auto 22px}
+.pcard .pn{font:700 34px/1.1 var(--head);color:var(--navy)}
+.pcard .pr{margin:10px 0 24px;font:600 20px/1.3 var(--body);color:var(--muted)}
+.why{flex:1}
+.why .eyebrow{font-size:18px;margin-bottom:14px}
+.ev{display:flex;justify-content:space-between;align-items:center;padding:20px 4px;border-bottom:1px solid var(--line);font:700 27px/1.1 var(--body);color:var(--ink);opacity:0}
+.ev small{font:600 17px/1 var(--body);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.next{margin-top:26px;background:var(--gold-soft);border-left:6px solid var(--gold);border-radius:6px;padding:22px 26px;opacity:0}
+.next .eyebrow{font-size:16px;margin-bottom:10px}
+.next p{margin:0;font:700 26px/1.25 var(--body);color:var(--navy)}
+#cursor{position:absolute;left:0;top:0;width:34px;height:48px;z-index:20;opacity:0}
+#ripple{position:absolute;left:0;top:0;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;border:3px solid var(--gold);opacity:0;z-index:19}
+
+/* ---------- F: close ---------- */
+#sF{background:radial-gradient(ellipse at 50% 45%,#1b3560 0%,var(--navy) 45%,var(--navy-deep) 100%)}
+.close{position:absolute;left:0;right:0;top:50%;transform:translateY(-58%);text-align:center}
+.close .kin{font:900 96px/1.24 var(--head);color:#fff}
+.close .rule{width:150px;height:6px;background:var(--gold);margin:46px auto 0;transform:scaleX(0)}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- A -->
+  <section class="scene" id="sA"><div class="cam" id="camA">
+    <div class="kin" id="capA" data-in="0.15" data-st="0.07">Another summer / spent filling *one *spot.</div>
+    <div class="tally"><div>Open positions <b>1</b></div><div>Interviews <b id="icount">0</b></div></div>
+    <div class="months" id="months"></div>
+  </div></section>
+
+  <!-- B/C -->
+  <section class="scene" id="sB"><div class="cam" id="camB">
+    <div class="kin capB" data-in="3.55" data-out="6.3" data-st="0.07">It reads your / *teacher *files.</div>
+    <div class="kin capB" data-in="6.55" data-out="8.55" data-st="0.07">Flags who / *might *leave.</div>
+    <div id="stat"><b id="cnt">0</b><div id="statL"><span id="sl1">files read</span><span id="sl2">flagged</span></div></div>
+    <div id="wall"></div>
+    <div id="beam"></div>
+  </div></section>
+
+  <!-- D -->
+  <section class="scene" id="sD"><div class="cam" id="camD">
+    <div class="eyebrow">What it flags</div>
+    <div id="dCount">01 <span>/ 03</span></div>
+    <div id="slides"></div>
+    <div id="dProg"></div>
+  </div></section>
+
+  <!-- E -->
+  <section class="scene" id="sE"><div class="cam" id="camE">
+    <div class="kin capE" data-in="18.35" data-out="19.95" data-st="0.05">Candidates get *checked *too.</div>
+    <div class="kin capE" data-in="20.25" data-out="21.75" data-st="0.05">Every flag, *in *one *place.</div>
+    <div class="kin capE" data-in="22.05" data-st="0.05">And the *reason *behind *it.</div>
+    <div class="win" id="win">
+      <div class="topbar"><div class="brand"><span></span>Teacher Retention</div><div class="who">Westfield High School · Principal</div></div>
+      <div class="side">
+        <div id="ind"></div>
+        <div class="nav" id="nav0" style="top:28px">Current teachers</div>
+        <div class="nav" id="nav1" style="top:92px">Prospective hires</div>
+        <div class="nav" id="nav2" style="top:156px">Flags <div class="badge">6</div></div>
+      </div>
+      <div class="main">
+        <div class="view" id="v1">
+          <h2>Prospective hires</h2>
+          <div class="sub">Biology opening · 5 candidates</div>
+          <table>
+            <thead><tr><th style="width:260px">Candidate</th><th style="width:200px">Subject</th><th style="width:180px">Applied</th><th>Status</th></tr></thead>
+            <tbody id="candBody"></tbody>
+          </table>
+        </div>
+        <div class="view" id="v2">
+          <h2>Flags</h2>
+          <div class="sub">6 open · 48 teachers and 5 candidates checked</div>
+          <div class="cols">
+            <div class="bars" id="bars"><h5>By reason</h5></div>
+            <div class="olist" id="olist"><h5>Open flags</h5></div>
+          </div>
+        </div>
+        <div class="view" id="v3">
+          <div class="prof">
+            <div class="pcard">
+              <div class="av">AR</div>
+              <div class="pn">Ms. A. Rivera</div>
+              <div class="pr">Biology · Current teacher<br>Westfield High School</div>
+              <span class="flag">Flagged: may leave</span>
+            </div>
+            <div class="why">
+              <div class="eyebrow">Why this flag</div>
+              <div class="ev">2nd year in the district <small>Personnel file</small></div>
+              <div class="ev">No mentor assigned <small>Mentoring roster</small></div>
+              <div class="ev">No mentor requested for next year <small>Mentoring roster</small></div>
+              <div class="next"><div class="eyebrow">Possible next step</div><p>Assign a mentor before the school year ends.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ripple"></div>
+    <svg id="cursor" viewBox="0 0 34 48"><path d="M3 3 L3 38 L12 30 L18 45 L24 42 L18 28 L30 28Z" fill="#fff" stroke="#1d2533" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  </div></section>
+
+  <!-- F -->
+  <section class="scene" id="sF">
+    <div class="close">
+      <div class="kin" data-in="25.2" data-st="0.08">Keep your teachers.</div>
+      <div class="kin" data-in="25.95" data-st="0.08">Skip the *summer *scramble.</div>
+      <div class="rule" id="rule"></div>
+    </div>
+  </section>
+
+  <div id="wipe"><div class="gb"></div><div class="nb"></div></div>
+</div>
+
+<script>
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eio = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const xout = x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
+const xin = x => x <= 0 ? 0 : Math.pow(2, 10 * x - 10);
+const back = x => { const c1 = 1.6, c3 = c1 + 1; return x <= 0 ? 0 : 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+
+// ---------- data built into the DOM first ----------
+// D: flag types
+const SLIDES = [
+  { title: "Early career, / *no *mentor", ini: "AR", name: "Ms. A. Rivera", role: "Biology · Current teacher", chip: "May leave", ev: ["2nd year in the district", "No mentor assigned"], src: "Personnel file · Mentoring roster" },
+  { title: "Transfer / *request", ini: "JC", name: "Ms. J. Chen", role: "History · Current teacher", chip: "May leave", ev: ["Asked to transfer schools, March 2026", "Request still open"], src: "HR requests" },
+  { title: "Retirement / *window", ini: "DO", name: "Mr. D. Okafor", role: "Chemistry · Current teacher", chip: "Plan ahead", ev: ["Eligible to retire June 2028", "29 years of service"], src: "Pension records" },
+  { title: "Heavy / *teaching *load", ini: "RP", name: "Mr. R. Patel", role: "Algebra · Current teacher", chip: "May leave", ev: ["6 sections this year", "2 outside his certification"], src: "Master schedule · Certification file" },
+  { title: "New hires, / *too", ini: "TM", name: "T. Moreno", role: "Biology · Candidate", chip: "Check before hiring", ev: ["Teaching license expires Aug 2027", "Applied for the Biology opening"], src: "Application file" },
+].filter((_, i) => i !== 2 && i !== 4);
+const D0 = 9.75, DS = 2.8, DLAST = 17.85;
+SLIDES.forEach((s, k) => {
+  const a = D0 + k * DS, o = k === SLIDES.length - 1 ? DLAST : a + DS - 0.3;
+  $('slides').insertAdjacentHTML('beforeend', `
+    <div class="kin dTitle" data-in="${a}" data-out="${o}" data-st="0.05">${s.title}</div>
+    <div class="fcard" id="fcard${k}">
+      <div class="fc-top"><div class="av">${s.ini}</div><div><div class="fc-name">${s.name}</div><div class="fc-role">${s.role}</div></div><div class="chip">${s.chip}</div></div>
+      <ul>${s.ev.map(e => `<li>${e}</li>`).join('')}</ul>
+      <div class="fc-src">FROM: <b>${s.src}</b></div>
+    </div>`);
+  $('dProg').insertAdjacentHTML('beforeend', '<div><i></i></div>');
+});
+const fcards = SLIDES.map((_, k) => $('fcard' + k));
+const progs = [...document.querySelectorAll('#dProg i')];
+
+// kinetic type
+const kins = [...document.querySelectorAll('.kin')];
+kins.forEach(el => {
+  el.innerHTML = el.textContent.trim().split(/\s+/).map(w => {
+    if (w === '/') return '<br>';
+    const g = w.startsWith('*'); w = w.replace(/^\*/, '');
+    return `<span class="w"><span class="${g ? 'g' : ''}">${w}</span></span>`;
+  }).join(' ');
+  el._w = [...el.querySelectorAll('.w>span')];
+});
+function renderKin(t) {
+  kins.forEach(el => {
+    const a = +el.dataset.in, o = el.dataset.out ? +el.dataset.out : 1e9, st = +(el.dataset.st || .06);
+    el._w.forEach((s, i) => {
+      const x = xout(prog(t, a + i * st, a + i * st + .7));
+      const y = xin(prog(t, o + i * .03, o + i * .03 + .32));
+      s.style.transform = `translateY(${(1 - x) * 115 - y * 115}%)`;
+    });
+  });
+}
+
+// A: calendar
+const INTERVIEWS = { 5: [3, 8, 10, 14, 16, 21, 24, 29], 6: [1, 7, 9, 13, 15, 20, 22, 27, 29], 7: [3, 5, 10, 12, 17, 19, 24] };
+const TIMES = ["9:00", "10:30", "1:00", "2:30", "11:00", "3:00"];
+const pills = [];
+[5, 6, 7].forEach(m => {
+  const el = document.createElement('div'); el.className = 'month';
+  el.innerHTML = `<h3>${new Date(2027, m, 1).toLocaleString('en-US', { month: 'long' })}</h3><div class="dow">${['S','M','T','W','T','F','S'].map(d => `<span>${d}</span>`).join('')}</div>`;
+  const grid = document.createElement('div'); grid.className = 'grid';
+  const first = new Date(2027, m, 1).getDay(), days = new Date(2027, m + 1, 0).getDate();
+  for (let i = 0; i < 35; i++) {
+    const d = i - first + 1, c = document.createElement('div');
+    c.className = 'cell' + ((i % 7 === 0 || i % 7 === 6) ? ' we' : '');
+    if (d >= 1 && d <= days) {
+      c.innerHTML = `<span class="n">${d}</span>`;
+      if (INTERVIEWS[m].includes(d)) {
+        const p = document.createElement('div'); p.className = 'pill';
+        p.innerHTML = `<small>${TIMES[pills.length % TIMES.length]}</small>Interview`;
+        c.appendChild(p); pills.push(p);
+      }
+    }
+    grid.appendChild(c);
+  }
+  el.appendChild(grid); $('months').appendChild(el);
+});
+const pillT = pills.map((_, i) => 0.3 + 2.55 * Math.pow(i / (pills.length - 1), 0.7));
+
+// B/C: file wall
+const NAMES = ["D. Okafor","H. Lindqvist","R. Patel","L. Ortiz","J. Chen","S. Haddad","K. Brooks","M. Greer","P. Alvarez","T. Nguyen","B. Foster","C. Diaz","E. Walsh","F. Kim","G. Romero","N. Ward","O. Price","Q. Bell","V. Shah","W. Lowe","Y. Cruz","A. Rivera","Z. Hart","I. Moss","J. Reyes","K. Dunn","L. Park","M. Shaw","N. Ruiz","O. Lane","P. Wolfe","R. Soto","S. Black","T. Hayes","U. Grant","V. Ross","W. Kerr","X. Long","Y. Hale","Z. Ford","A. Vega","B. Stone","C. Burke","D. Ali","E. Frost","F. Novak","G. Cole","H. Ibarra"];
+const SUBJ = ["Chemistry","English","Algebra","Spanish","History","Physics","Art","Biology","Music","Geometry","PE","French"];
+const FLAGGED = [0, 2, 3, 4, 21, 37];
+const RIVERA = 21;
+const cards = NAMES.map((n, i) => {
+  const c = i % 8, r = Math.floor(i / 8);
+  const el = document.createElement('div'); el.className = 'fc';
+  el.style.left = (c * 120.5) + 'px'; el.style.top = (r * 125.8) + 'px';
+  el.innerHTML = `<div class="av">${n.replace(/[^A-Z]/g, '')}</div><div class="nm">${n}</div><div class="sb">${i === RIVERA ? 'Biology' : SUBJ[i % SUBJ.length]}</div><div class="tk"></div><div class="fl"></div>`;
+  $('wall').appendChild(el);
+  const k = FLAGGED.indexOf(i);
+  return { el, c, r, cx: 860 + c * 120.5 + 53, tk: el.querySelector('.tk'), fl: el.querySelector('.fl'), av: el.querySelector('.av'), ft: k < 0 ? null : 6.85 + k * 0.13 };
+});
+
+// E: app tour
+const CANDS = [["J. Whitfield","Biology","May 28","ok"],["T. Moreno","Biology","Jun 2","License expires Aug 2027"],["P. Sato","Biology","Jun 4","ok"],["D. Ellison","Biology","Jun 9","ok"],["R. Abara","Biology","Jun 11","ok"]];
+$('candBody').innerHTML = CANDS.map(c => `<tr class="cr${c[3] !== 'ok' ? ' hl' : ''}"><td class="nm">${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3] === 'ok' ? '<span class="ok">No flags</span>' : `<span class="flag">${c[3]}</span>`}</td></tr>`).join('');
+const BARS = [["Early career, no mentor", 2], ["Transfer request", 1], ["Retirement window", 1], ["Heavy teaching load", 1], ["Candidate license", 1]];
+$('bars').insertAdjacentHTML('beforeend', BARS.map((b, i) => `<div class="bar${i === 0 ? ' top' : ''}"><div class="bl">${b[0]}<b>${b[1]}</b></div><div class="bt"><div class="bf" data-w="${b[1] / 2 * 100}"></div></div></div>`).join(''));
+const OPEN = [["Ms. A. Rivera", "Early career, no mentor"], ["Ms. L. Ortiz", "Early career, no mentor"], ["Ms. J. Chen", "Transfer request"], ["Mr. D. Okafor", "Retirement window"], ["Mr. R. Patel", "Heavy teaching load"], ["T. Moreno", "Candidate license"]];
+$('olist').insertAdjacentHTML('beforeend', OPEN.map((o, i) => `<div class="orow" id="or${i}">${o[0]}<span class="r">${o[1]}</span></div>`).join(''));
+const candRows = [...document.querySelectorAll('.cr')], bfs = [...document.querySelectorAll('.bf')], orows = OPEN.map((_, i) => $('or' + i));
+const evs = [...document.querySelectorAll('.ev')], nextBox = document.querySelector('.next');
+
+// cursor targets in stage coords (measured before any scaling)
+function centerOf(el) { const r = el.getBoundingClientRect(), s = $('stage').getBoundingClientRect(); return [r.left - s.left + 30, r.top - s.top + r.height / 2]; }
+const P_NAV2 = centerOf($('nav2')), P_RIV = centerOf($('or0'));
+
+// ---------- timeline ----------
+const CUTS = [3.4, 9.6, 18.1, 24.9];
+const SCENES = ['sA', 'sB', 'sD', 'sE', 'sF'];
+function render(t) {
+  const si = CUTS.filter(c => t >= c).length;
+  SCENES.forEach((id, i) => $(id).style.visibility = i === si ? 'visible' : 'hidden');
+
+  let wx = 2400;
+  CUTS.forEach(c => { const p = prog(t, c - .36, c + .36); if (p > 0 && p < 1) wx = lerp(2300, -3300, eio(p)); });
+  $('wipe').style.transform = `translateX(${wx}px) skewX(-14deg)`;
+
+  renderKin(t);
+
+  // ---- A: 0–3.4
+  if (si === 0) {
+    $('camA').style.transform = `scale(${lerp(1, 1.05, eio(prog(t, 0, 3.4)))})`;
+    let n = 0;
+    pills.forEach((p, i) => {
+      const x = prog(t, pillT[i], pillT[i] + .22);
+      if (t >= pillT[i]) n++;
+      p.style.opacity = clamp(x * 3);
+      p.style.transform = `scale(${lerp(.4, 1, back(x))})`;
+    });
+    $('icount').textContent = n;
+    const m = xout(prog(t, 0, .7));
+    $('months').style.transform = `translateY(${(1 - m) * 80}px)`;
+    $('months').style.opacity = m;
+  }
+
+  // ---- B/C: 3.4–9.6
+  if (si === 1) {
+    const bx = lerp(820, 1850, eio(prog(t, 4.45, 6.25)));
+    cards.forEach(cd => {
+      const s = 3.5 + (cd.c + cd.r) * 0.035, x = xout(prog(t, s, s + .55));
+      const dim = cd.ft !== null ? 0 : prog(t, 6.75, 7.25) * 0.72;
+      cd.el.style.opacity = clamp(x * 2) * (1 - dim);
+      cd.el.style.transform = `translateY(${(1 - x) * 60}px) scale(${lerp(.7, 1, x)})`;
+      cd.tk.style.opacity = (bx > cd.cx && !(cd.ft !== null && t >= cd.ft)) ? 1 : 0;
+      if (cd.ft !== null) {
+        const f = prog(t, cd.ft, cd.ft + .3);
+        cd.el.style.background = `rgb(${lerp(255, 196, f) | 0},${lerp(255, 151, f) | 0},${lerp(255, 44, f) | 0})`;
+        cd.fl.style.transform = `scale(${back(f)})`;
+        cd.av.style.background = f > .5 ? '#f7f0de' : '#dfe4ec';
+      }
+    });
+    $('beam').style.left = bx + 'px';
+    $('beam').style.opacity = prog(t, 4.35, 4.5) * (1 - prog(t, 6.15, 6.3));
+    const readN = Math.round(48 * eio(prog(t, 4.45, 6.25)));
+    const flagN = cards.filter(c => c.ft !== null && t >= c.ft).length;
+    $('cnt').textContent = t >= 6.6 ? flagN : readN;
+    $('sl1').style.opacity = 1 - prog(t, 6.45, 6.6); $('sl2').style.opacity = prog(t, 6.6, 6.75);
+    const so = xout(prog(t, 3.8, 4.4)) * (1 - prog(t, 8.5, 8.8));
+    $('stat').style.opacity = so; $('stat').style.transform = `translateY(${(1 - so) * 30}px)`;
+    const rc = cards[RIVERA], ox = 860 + rc.c * 120.5 + 53, oy = 170 + rc.r * 125.8 + 55;
+    const z = xin(prog(t, 8.55, 9.55));
+    $('camB').style.transformOrigin = `${ox}px ${oy}px`;
+    $('camB').style.transform = `scale(${1 + z * 14 + 0.04 * prog(t, 3.4, 8.5)})`;
+  }
+
+  // ---- D: 9.6–18.1
+  if (si === 2) {
+    SLIDES.forEach((s, k) => {
+      const a = D0 + k * DS, o = k === SLIDES.length - 1 ? DLAST : a + DS - .3;
+      const x = xout(prog(t, a + .05, a + .6)), y = xin(prog(t, o, o + .3));
+      const el = fcards[k];
+      el.style.opacity = clamp(x * 2) * (1 - y);
+      el.style.transform = `translateX(${(1 - x) * 260 - y * 260}px) rotate(${(1 - x) * 2}deg)`;
+      el.querySelectorAll('li').forEach((li, j) => {
+        const lx = xout(prog(t, a + .3 + j * .14, a + .7 + j * .14));
+        li.style.opacity = lx; li.style.transform = `translateX(${(1 - lx) * 30}px)`;
+      });
+      progs[k].style.width = (prog(t, a, a + DS) * 100) + '%';
+    });
+    const cur = clamp(Math.floor((t - D0) / DS), 0, SLIDES.length - 1);
+    $('dCount').innerHTML = `0${cur + 1} <span>/ 03</span>`;
+    $('camD').style.transform = `scale(${lerp(1.0, 1.03, prog(t, 9.6, 18.1))})`;
+  }
+
+  // ---- E: 18.1–24.9
+  if (si === 3) {
+    const w = xout(prog(t, 18.15, 18.75));
+    $('win').style.transform = `translateY(${(1 - w) * 120}px) scale(${lerp(.94, 1, w)})`;
+    [[18.4, 20.15], [20.2, 21.95], [22.0, 99]].forEach(([a, o], i) => {
+      const x = xout(prog(t, a, a + .45)), y = xin(prog(t, o - .2, o));
+      $('v' + (i + 1)).style.opacity = x * (1 - y);
+      $('v' + (i + 1)).style.transform = `translateX(${(1 - x) * 60 - y * 60}px)`;
+    });
+    candRows.forEach((r, i) => r.style.opacity = xout(prog(t, 18.55 + i * .08, 18.95 + i * .08)));
+    bfs.forEach((b, i) => b.style.width = (+b.dataset.w * xout(prog(t, 20.4 + i * .08, 21.0 + i * .08))) + '%');
+    orows.forEach((r, i) => { const x = xout(prog(t, 20.4 + i * .07, 20.8 + i * .07)); r.style.opacity = x; r.style.transform = `translateX(${(1 - x) * 30}px)`; });
+    orows[0].classList.toggle('hot', t > 21.55);
+    evs.forEach((e, i) => { const x = xout(prog(t, 22.35 + i * .3, 22.85 + i * .3)); e.style.opacity = x; e.style.transform = `translateX(${(1 - x) * 30}px)`; });
+    const nx = xout(prog(t, 23.35, 23.9));
+    nextBox.style.opacity = nx; nextBox.style.transform = `translateY(${(1 - nx) * 20}px)`;
+    const navIdx = t < 20.1 ? 1 : 2;
+    $('ind').style.top = (t < 20.1 ? 92 : lerp(92, 156, xout(prog(t, 20.1, 20.4)))) + 'px';
+    [0, 1, 2].forEach(i => $('nav' + i).classList.toggle('on', i === navIdx));
+    const s1 = eio(prog(t, 19.3, 20.0)), s2 = eio(prog(t, 20.9, 21.7));
+    let cx = lerp(1300, P_NAV2[0], s1), cy = lerp(900, P_NAV2[1], s1);
+    cx = lerp(cx, P_RIV[0], s2); cy = lerp(cy, P_RIV[1], s2);
+    $('cursor').style.opacity = prog(t, 19.1, 19.3) * (1 - prog(t, 22.1, 22.3));
+    $('cursor').style.transform = `translate(${cx}px, ${cy}px)`;
+    let rp = -1;
+    [[20.05, P_NAV2], [21.75, P_RIV]].forEach(([ct, p]) => { const q = prog(t, ct, ct + .4); if (q > 0 && q < 1) { rp = q; $('ripple').style.left = p[0] + 'px'; $('ripple').style.top = p[1] + 'px'; } });
+    $('ripple').style.opacity = rp < 0 ? 0 : 1 - rp;
+    $('ripple').style.transform = `scale(${rp < 0 ? 0 : .3 + rp})`;
+    $('camE').style.transformOrigin = '1150px 600px';
+    $('camE').style.transform = `scale(${1 + 0.025 * prog(t, 18.1, 22) + 0.05 * eio(prog(t, 22.2, 24.6))})`;
+  }
+
+  // ---- F: 24.9–30
+  if (si === 4) $('rule').style.transform = `scaleX(${xout(prog(t, 26.7, 27.5))})`;
+}
+// ---------- 30s pacing: output time -> original timeline ----------
+// Maps output (video) time <-> original timeline, fitting into exactly 30s.
+// Each scene gets a fixed output length; inside it, "holds" give extra reading time
+// and the rest of the scene plays at whatever pace fits.
+const R = 0.12; // pace during a hold (slow drift, never a freeze)
+const PACE = [ // [origStart, origEnd, outSeconds, holds: [origTime, extraSeconds]]
+  [0, 3.4, 2.95, []],                                   // calendar (easy read, quicker)
+  [3.4, 9.6, 6.2, [[7.85, 0.6]]],                       // file scan, "Flags who might leave"
+  [9.6, 18.1, 7.95, []],                                // three flag cards
+  [18.1, 24.9, 8.2, [[19.05, 0.45], [20.86, 0.45], [23.95, 0.5]]], // app screens
+  [24.9, 30, 4.7, []],                                  // close
+];
+const K = [[0, 0]];
+let T = 0;
+for (const [a, b, out, holds] of PACE) {
+  const ds = holds.map(([, E]) => E * R / (1 - R));
+  const holdOrig = ds.reduce((s, d) => s + d, 0), holdOut = ds.reduce((s, d) => s + d / R, 0);
+  const rate = (b - a - holdOrig) / (out - holdOut);
+  let t = a;
+  holds.forEach(([h], i) => {
+    T += (h - t) / rate; t = h; K.push([T, t]);
+    T += ds[i] / R; t += ds[i]; K.push([T, t]);
+  });
+  T += (b - t) / rate; K.push([T, b]);
+}
+const DURATION = T;
+function interp(x, a, b) {
+  for (let i = 1; i < K.length; i++) if (x <= K[i][a] || i === K.length - 1) {
+    const [p, q] = [K[i - 1], K[i]];
+    if (q[a] === p[a]) continue;
+    return p[b] + (q[b] - p[b]) * (x - p[a]) / (q[a] - p[a]);
+  }
+}
+const toOrig = T => interp(T, 0, 1);
+const toOut = t => interp(t, 1, 0);
+
+
+const renderOrig = render;
+window.render = T => renderOrig(toOrig(T));
+window.DURATION = DURATION;
+
+// ---------- preview playback (skipped when ?render) ----------
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('stage').style.transform = `translate(${(innerWidth - 1920 * s) / 2}px, ${(innerHeight - 1080 * s) / 2}px) scale(${s})`;
+}
+const params = new URLSearchParams(location.search);
+if (!params.has('render')) {
+  fit(); addEventListener('resize', fit);
+  const fixed = params.get('t');
+  if (fixed !== null) window.render(+fixed);
+  else { const t0 = performance.now(); (function loop(now) { window.render(((now - t0) / 1000) % (DURATION + 1)); requestAnimationFrame(loop); })(t0); }
+} else render(0);
+</script>
+</body>
+</html>

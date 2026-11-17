@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retain</title>
+<meta name="description" content="Retain reads your district's teacher files and flags the teachers who may leave, with the reason behind every flag.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+<style>
+/* Layout: sleek product site. Large type, soft glowing gradients, rounded tinted panels, one blue accent; amber reserved for flags. */
+:root {
+  --bg: #ffffff;
+  --tint: #f0f4f9;
+  --tint-2: #e6edf7;
+  --surface: #ffffff;
+  --ink: #1f1f1f;
+  --muted: #5f6368;
+  --line: #e3e7ee;
+  --accent: #0b57d0;
+  --accent-2: #6c4ce0;
+  --accent-soft: #d3e3fd;
+  --accent-ink: #041e49;
+  --on-accent: #ffffff;
+  --warn: #f9ab00;
+  --warn-soft: #feefc3;
+  --warn-ink: #5c3c00;
+  --glow-a: rgba(11, 87, 208, .20);
+  --glow-b: rgba(108, 76, 224, .16);
+  --glow-c: rgba(249, 171, 0, .14);
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 18px 50px -20px rgba(4,30,73,.28);
+  --font: "DM Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1012; --tint: #1b1c1f; --tint-2: #25272b; --surface: #17181b;
+    --ink: #e8e8e8; --muted: #a8abb0; --line: #2d3034;
+    --accent: #a8c7fa; --accent-2: #c3b2ff; --accent-soft: #0842a0; --accent-ink: #d3e3fd; --on-accent: #062e6f;
+    --warn: #fdd663; --warn-soft: #3d3000; --warn-ink: #feefc3;
+    --glow-a: rgba(80, 140, 255, .22); --glow-b: rgba(140, 110, 255, .18); --glow-c: rgba(253, 214, 99, .08);
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 18px 50px -20px rgba(0,0,0,.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1012; --tint: #1b1c1f; --tint-2: #25272b; --surface: #17181b;
+  --ink: #e8e8e8; --muted: #a8abb0; --line: #2d3034;
+  --accent: #a8c7fa; --accent-2: #c3b2ff; --accent-soft: #0842a0; --accent-ink: #d3e3fd; --on-accent: #062e6f;
+  --warn: #fdd663; --warn-soft: #3d3000; --warn-ink: #feefc3;
+  --glow-a: rgba(80, 140, 255, .22); --glow-b: rgba(140, 110, 255, .18); --glow-c: rgba(253, 214, 99, .08);
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 18px 50px -20px rgba(0,0,0,.7);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; transition: background .3s, color .3s; }
+h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.03em; line-height: 1.08; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: inherit; }
+button { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 640px) { .wrap { padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); } }
+.kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--accent); letter-spacing: .01em; }
+.grad { background: linear-gradient(100deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Scroll progress */
+#progress { position: fixed; top: 0; left: 0; height: 3px; width: 100%; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--accent), var(--accent-2)); z-index: 20; }
+
+/* Header */
+.site-head { position: sticky; top: 0; z-index: 10; transition: background .3s, box-shadow .3s; }
+.site-head.scrolled { background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: saturate(1.5) blur(16px); -webkit-backdrop-filter: saturate(1.5) blur(16px); box-shadow: 0 1px 0 var(--line); }
+.site-head .wrap { display: flex; align-items: center; gap: 20px; padding-block: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; letter-spacing: -0.035em; text-decoration: none; }
+.mark { width: 26px; height: 26px; flex: none; }
+.site-nav { display: flex; gap: 4px; margin-left: auto; align-items: center; }
+.site-nav a.link { color: var(--muted); text-decoration: none; font-size: 15px; font-weight: 500; padding: 8px 14px; border-radius: 999px; transition: background .2s, color .2s; }
+.site-nav a.link:hover { background: var(--tint); color: var(--ink); }
+.site-nav a.link.active { color: var(--ink); background: var(--tint); }
+.icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent; color: var(--muted); display: grid; place-items: center; cursor: pointer; transition: background .2s, color .2s; }
+.icon-btn:hover { background: var(--tint); color: var(--ink); }
+.icon-btn svg { width: 20px; height: 20px; }
+@media (max-width: 900px) { .site-nav a.link { display: none; } }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 15px/1 var(--font); padding: 15px 24px; border-radius: 999px; border: 0; cursor: pointer; text-decoration: none; background: var(--accent); color: var(--on-accent); transition: transform .2s, box-shadow .2s, filter .2s; white-space: nowrap; }
+.btn:hover { transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--accent) 70%, transparent); }
+.btn:active { transform: translateY(0); }
+.btn.ghost { background: color-mix(in srgb, var(--surface) 70%, transparent); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); backdrop-filter: blur(8px); }
+.btn.ghost:hover { background: var(--tint); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.sm { padding: 11px 18px; font-size: 14.5px; }
+.btn svg { width: 18px; height: 18px; }
+
+/* Hero */
+.hero { position: relative; padding-block: 72px 40px; text-align: center; isolation: isolate; }
+.glow { position: absolute; inset: -140px 0 -60px; z-index: -1; overflow: hidden; pointer-events: none; }
+.glow i { position: absolute; border-radius: 50%; filter: blur(70px); }
+.glow i:nth-child(1) { width: 560px; height: 560px; left: 8%; top: 40px; background: var(--glow-a); }
+.glow i:nth-child(2) { width: 480px; height: 480px; right: 6%; top: 0; background: var(--glow-b); }
+.glow i:nth-child(3) { width: 380px; height: 380px; left: 42%; top: 300px; background: var(--glow-c); }
+.grid-bg { position: absolute; inset: -140px 0 0; z-index: -1; pointer-events: none; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 56px 56px; mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 20%, transparent 75%); opacity: .55; }
+.hero .wrap { display: grid; justify-items: center; gap: 24px; position: relative; }
+.badge { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 75%, transparent); box-shadow: inset 0 0 0 1px var(--line); font-size: 14px; font-weight: 500; color: var(--muted); backdrop-filter: blur(8px); }
+@media (max-width: 520px) { .badge { padding: 6px 14px; font-size: 13px; } .badge b { display: none; } }
+.badge b { white-space: nowrap; background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; font-size: 12.5px; padding: 4px 10px; border-radius: 999px; }
+.hero h1 { font-size: clamp(42px, 7.2vw, 88px); max-width: 14ch; font-weight: 600; letter-spacing: -0.045em; }
+.hero .sub { font-size: clamp(18px, 2vw, 21px); color: var(--muted); max-width: 54ch; }
+.hero .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+.hero .fine { font-size: 13.5px; color: var(--muted); }
+
+/* Floating flag chips */
+.chips { position: absolute; inset: 0; pointer-events: none; }
+.chip { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px 10px 10px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); font-size: 13.5px; font-weight: 500; text-align: left; white-space: nowrap; }
+.chip .av { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.chip small { display: block; color: var(--warn-ink); background: var(--warn-soft); border-radius: 999px; padding: 1px 8px; font-size: 11.5px; margin-top: 2px; width: fit-content; }
+.chip.c1 { left: 0; top: 70px; }
+.chip.c2 { right: 0; top: 30px; }
+.chip.c3 { left: 4%; bottom: 0; }
+.chip.c4 { right: 3%; bottom: 30px; }
+@media (max-width: 1080px) { .chips { display: none; } }
+
+/* Video */
+.video-sec { padding-block: 24px 40px; }
+.player { position: relative; border-radius: 28px; overflow: hidden; background: #0d1d37; box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); aspect-ratio: 16 / 9; }
+.player .frame-box { position: absolute; inset: 0; overflow: hidden; }
+.player iframe { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; border: 0; transform-origin: 0 0; pointer-events: none; }
+.player.native iframe { pointer-events: auto; }
+.poster { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, rgba(13,29,55,.15), rgba(13,29,55,.55)); border: 0; cursor: pointer; transition: opacity .35s; z-index: 2; }
+.poster.hide { opacity: 0; pointer-events: none; }
+.play-big { width: clamp(64px, 9vw, 96px); aspect-ratio: 1; border-radius: 50%; background: rgba(255,255,255,.95); display: grid; place-items: center; box-shadow: 0 10px 40px rgba(0,0,0,.35); transition: transform .25s; }
+.poster:hover .play-big { transform: scale(1.07); }
+.play-big svg { width: 38%; height: 38%; margin-left: 6%; fill: #0b57d0; }
+.poster .lbl { position: absolute; left: clamp(14px, 3vw, 28px); bottom: clamp(14px, 3vw, 26px); color: #fff; font-weight: 600; font-size: clamp(14px, 1.6vw, 17px); display: flex; gap: 10px; align-items: center; text-shadow: 0 1px 8px rgba(0,0,0,.4); }
+.poster .lbl span { background: rgba(255,255,255,.2); backdrop-filter: blur(6px); padding: 4px 10px; border-radius: 999px; font-size: 13px; }
+
+.controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 30px clamp(10px, 2vw, 18px) clamp(8px, 1.5vw, 14px); background: linear-gradient(transparent, rgba(4,14,30,.72)); display: flex; align-items: center; gap: 10px; color: #fff; opacity: 0; transition: opacity .3s; }
+.player.started .controls { opacity: 1; }
+.player.started.playing.idle .controls { opacity: 0; }
+.controls button { width: 38px; height: 38px; flex: none; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; display: grid; place-items: center; cursor: pointer; transition: background .2s; }
+.controls button:hover { background: rgba(255,255,255,.28); }
+.controls svg { width: 18px; height: 18px; fill: currentColor; }
+.time { font-size: 13px; font-variant-numeric: tabular-nums; min-width: 78px; text-align: center; opacity: .9; }
+.scrub { flex: 1; -webkit-appearance: none; appearance: none; height: 5px; border-radius: 99px; background: linear-gradient(90deg, #fff var(--p, 0%), rgba(255,255,255,.3) var(--p, 0%)); cursor: pointer; min-width: 60px; }
+.scrub::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.4); }
+.scrub::-moz-range-thumb { width: 15px; height: 15px; border: 0; border-radius: 50%; background: #fff; }
+.player.native .controls, .player.native + .chapters { display: none; }
+.player:fullscreen { border-radius: 0; aspect-ratio: auto; width: 100vw; height: 100vh; }
+
+.chapters { display: flex; gap: 8px; margin-top: 16px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.chapters::-webkit-scrollbar { display: none; }
+.chapter { flex: 1 0 150px; text-align: left; border: 0; background: var(--tint); color: var(--ink); border-radius: 16px; padding: 12px 14px 14px; cursor: pointer; position: relative; overflow: hidden; transition: background .2s; }
+.chapter:hover { background: var(--tint-2); }
+.chapter small { display: block; color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.chapter b { font-weight: 600; font-size: 14.5px; }
+.chapter i { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--accent); }
+.chapter.on { background: var(--accent-soft); color: var(--accent-ink); }
+.chapter.on small { color: inherit; opacity: .75; }
+.video-note { font-size: 13px; color: var(--muted); margin-top: 12px; text-align: center; }
+
+/* Sections */
+.section { padding-block: clamp(72px, 10vw, 120px); }
+.section-head { max-width: 760px; display: grid; gap: 14px; margin-bottom: 48px; }
+.section-head.center { margin-inline: auto; text-align: center; justify-items: center; }
+.section-head h2, .problem h2 { font-size: clamp(32px, 4.6vw, 54px); }
+.section-head p { color: var(--muted); font-size: 19px; }
+
+/* Problem */
+.problem { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 64px; align-items: center; }
+.problem .copy { display: grid; gap: 18px; }
+.problem p.lead { color: var(--muted); font-size: 19px; max-width: 48ch; }
+.quote { font-size: 22px; font-weight: 500; letter-spacing: -0.015em; line-height: 1.4; border-left: 3px solid var(--warn); padding-left: 18px; }
+.quote cite { display: block; font-size: 14px; color: var(--muted); font-style: normal; font-weight: 400; margin-top: 6px; letter-spacing: 0; }
+.cal { background: var(--tint); border-radius: 28px; padding: 24px; }
+.summer { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.month { background: var(--surface); border-radius: 18px; padding: 14px; }
+.month h4 { font-size: 15px; margin-bottom: 10px; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.days span { aspect-ratio: 1; border-radius: 50%; background: var(--tint); transition: background .3s, transform .3s; }
+.days span.iv.on { background: var(--accent); transform: scale(1.08); }
+.days span.blank { background: transparent; }
+.tally { display: flex; gap: 32px; margin-top: 20px; padding-left: 4px; flex-wrap: wrap; align-items: end; }
+.tally div { color: var(--muted); font-size: 14px; }
+.tally b { display: block; color: var(--ink); font-size: 34px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tally button { margin-left: auto; }
+@media (max-width: 860px) { .problem { grid-template-columns: 1fr; gap: 36px; } }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.stat { background: var(--tint); border-radius: 24px; padding: 28px 24px; display: grid; gap: 12px; align-content: start; transition: transform .25s, box-shadow .25s; }
+.stat:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.stat strong { font-size: clamp(36px, 3.8vw, 50px); font-weight: 600; letter-spacing: -0.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat strong.long { font-size: clamp(26px, 2.5vw, 31px); letter-spacing: -0.03em; }
+.stat p { color: var(--muted); font-size: 15.5px; }
+.stat a { font-size: 13.5px; color: var(--accent); text-decoration: none; font-weight: 500; }
+.stat a:hover { text-decoration: underline; }
+@media (max-width: 960px) { .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .stats-grid { grid-template-columns: 1fr; } }
+
+/* Product preview */
+.stage { background: linear-gradient(135deg, var(--tint), var(--tint-2)); border-radius: 32px; padding: clamp(10px, 3vw, 40px); position: relative; }
+.mock { background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
+.mock-bar { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.mock-bar b { font-weight: 700; font-size: 17px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 9px; }
+.mock-bar .mark { width: 20px; height: 20px; }
+.mock-bar .school { margin-left: auto; font-size: 14px; color: var(--muted); }
+.mock-body { display: grid; grid-template-columns: 220px minmax(0, 1fr); }
+.mock-side { padding: 16px 12px; display: grid; gap: 4px; align-content: start; border-right: 1px solid var(--line); }
+.mock-side button { padding: 10px 16px; border: 0; background: none; border-radius: 999px; font: 500 15px var(--font); color: var(--muted); display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-align: left; gap: 8px; }
+.mock-side button:hover { background: var(--tint); color: var(--ink); }
+.mock-side button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+.count { background: var(--warn); color: #3a2600; border-radius: 999px; font-size: 12px; min-width: 22px; height: 22px; padding: 0 6px; display: grid; place-items: center; font-weight: 700; }
+.mock-main { padding: 22px 26px 28px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 32px; min-height: 470px; }
+.mock-main h3 { font-size: 26px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.meta { color: var(--muted); font-size: 14px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.scanbar { height: 6px; border-radius: 99px; background: var(--tint); margin-top: 14px; overflow: hidden; }
+.scanbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: inherit; }
+.label { font-size: 13px; font-weight: 600; color: var(--muted); margin: 20px 0 8px; }
+.flags { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.flags li { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.flags button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: none; border: 0; border-radius: 14px; font: 500 15.5px var(--font); color: var(--ink); cursor: pointer; text-align: left; transition: background .15s; }
+.flags button:hover { background: var(--tint); }
+.flags button[aria-pressed="true"] { background: var(--tint-2); }
+.tag { font-size: 12.5px; font-weight: 500; padding: 4px 11px; background: var(--warn-soft); border-radius: 999px; white-space: nowrap; color: var(--warn-ink); }
+.empty { color: var(--muted); font-size: 15px; padding: 12px 14px; }
+.hint { font-size: 13.5px; color: var(--muted); margin-top: 12px; padding-left: 14px; }
+.detail { display: grid; gap: 18px; align-content: start; transition: opacity .2s, transform .2s; }
+.detail.fade { opacity: 0; transform: translateY(6px); }
+.person { display: flex; gap: 16px; align-items: center; background: var(--tint); border-radius: 20px; padding: 18px; }
+.avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 19px; flex: none; }
+.person h4 { font-size: 20px; }
+.person p { font-size: 14px; color: var(--muted); margin-top: 2px; }
+.pill { display: inline-block; margin-top: 8px; background: var(--warn-soft); color: var(--warn-ink); font-size: 12.5px; font-weight: 500; padding: 4px 11px; border-radius: 999px; }
+.why { list-style: none; margin: 0; padding: 0; }
+.why li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--line); font-weight: 500; animation: rise .4s both; }
+.why li:last-child { border-bottom: 0; }
+.why li small { font-size: 12.5px; font-weight: 500; color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, transparent); padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.next { background: var(--accent-soft); color: var(--accent-ink); padding: 16px 20px; border-radius: 20px; }
+.next .label { margin: 0 0 4px; color: inherit; opacity: .8; }
+.next p { font-weight: 500; font-size: 17px; }
+.sample-note { font-size: 13px; color: var(--muted); margin-top: 16px; text-align: center; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (max-width: 860px) {
+  .mock-body { grid-template-columns: 1fr; }
+  .mock-side { display: flex; overflow-x: auto; padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .mock-side button { white-space: nowrap; }
+  .mock-main { grid-template-columns: 1fr; padding: 18px 16px 24px; min-height: 0; }
+}
+
+/* Features */
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.feature { display: grid; gap: 12px; align-content: start; padding: 28px; border-radius: 24px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); position: relative; overflow: hidden; transition: box-shadow .3s, transform .3s; }
+.feature::before { content: ""; position: absolute; inset: 0; background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%); opacity: 0; transition: opacity .3s; pointer-events: none; }
+.feature:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, var(--line)), var(--shadow); }
+.feature:hover::before { opacity: 1; }
+.icon { width: 48px; height: 48px; border-radius: 16px; background: var(--accent-soft); display: grid; place-items: center; }
+.icon svg { width: 24px; height: 24px; }
+.feature h3 { font-size: 22px; margin-top: 6px; }
+.feature p { color: var(--muted); }
+@media (max-width: 860px) { .features { grid-template-columns: 1fr; } }
+
+/* Calculator */
+.calc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.calc-in, .calc-out { border-radius: 28px; padding: clamp(22px, 3.5vw, 40px); }
+.calc-in { background: var(--tint); display: grid; gap: 28px; align-content: start; }
+.field { display: grid; gap: 10px; }
+.field-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.field label, .field .flabel { font-weight: 600; font-size: 15px; }
+.field output { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--accent); }
+.field .help { font-size: 13.5px; color: var(--muted); }
+input[type="range"].rng { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--accent) var(--p, 50%), var(--line) var(--p, 50%)); cursor: pointer; }
+input[type="range"].rng::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+input[type="range"].rng::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--surface); padding: 4px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.seg button { border: 0; background: none; border-radius: 999px; padding: 10px 6px; font: 500 14px var(--font); color: var(--muted); cursor: pointer; line-height: 1.2; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.seg button small { display: block; font-size: 11.5px; opacity: .8; }
+.calc-out { background: linear-gradient(145deg, #0b57d0, #3b2fb0); color: #fff; display: grid; gap: 22px; align-content: space-between; position: relative; overflow: hidden; }
+.calc-out::after { content: ""; position: absolute; width: 380px; height: 380px; right: -120px; top: -140px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.18), transparent 65%); pointer-events: none; }
+.calc-out .big { font-size: clamp(44px, 6vw, 72px); font-weight: 600; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+.calc-out .cap { font-size: 15px; opacity: .85; margin-bottom: 8px; }
+.people { display: flex; flex-wrap: wrap; gap: 5px; }
+.people i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,.25); transition: background .3s; }
+.people i.gone { background: #fdd663; }
+.calc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.calc-row div { background: rgba(255,255,255,.12); border-radius: 18px; padding: 14px 16px; }
+.calc-row b { display: block; font-size: 26px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.calc-row span { font-size: 13.5px; opacity: .85; }
+.calc-src { font-size: 12.5px; opacity: .75; }
+.calc-src a { color: #fff; }
+@media (max-width: 860px) { .calc { grid-template-columns: 1fr; } }
+
+/* Approach */
+.limits { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.limit { border-radius: 24px; padding: 26px; display: grid; gap: 10px; align-content: start; background: var(--tint); }
+.limit .num { width: 34px; height: 34px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; color: var(--accent); }
+.limit .num svg { width: 18px; height: 18px; }
+.limit h3 { font-size: 19px; letter-spacing: -0.02em; line-height: 1.2; }
+.limit p { color: var(--muted); font-size: 15.5px; }
+@media (max-width: 960px) { .limits { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .limits { grid-template-columns: 1fr; } }
+
+/* Close */
+.close-wrap { padding-bottom: 96px; }
+.close { position: relative; overflow: hidden; isolation: isolate; background: #0d1d37; color: #fff; border-radius: 36px; padding: clamp(48px, 8vw, 104px) clamp(20px, 5vw, 64px); text-align: center; display: grid; justify-items: center; gap: 20px; }
+.close .glow { inset: 0; }
+.close .glow i:nth-child(1) { background: rgba(11,87,208,.55); left: -10%; top: -30%; }
+.close .glow i:nth-child(2) { background: rgba(108,76,224,.45); right: -10%; top: 10%; }
+.close .glow i:nth-child(3) { background: rgba(249,171,0,.18); left: 35%; top: 60%; }
+.close h2 { font-size: clamp(36px, 5.4vw, 64px); max-width: 16ch; font-weight: 600; letter-spacing: -0.045em; }
+.close h2 span { color: #fdd663; }
+.close p { color: rgba(255,255,255,.78); font-size: 18px; max-width: 46ch; }
+.close .btn { background: #fff; color: #0b57d0; }
+.close .btn.ghost { background: rgba(255,255,255,.1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+.close .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+footer a { text-decoration: none; }
+footer a:hover { color: var(--ink); }
+
+/* Reveal on scroll */
+.js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1); transition-delay: var(--d, 0s); }
+.js .reveal.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .glow i { animation: drift 18s ease-in-out infinite alternate; }
+  .glow i:nth-child(2) { animation-duration: 22s; animation-delay: -6s; }
+  .glow i:nth-child(3) { animation-duration: 26s; animation-delay: -12s; }
+  .chip { animation: float 7s ease-in-out infinite; }
+  .chip.c2 { animation-delay: -2s; } .chip.c3 { animation-delay: -4s; } .chip.c4 { animation-delay: -5.5s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .flags li, .why li { animation: none; }
+}
+@keyframes drift { to { transform: translate(60px, 40px) scale(1.12); } }
+@keyframes float { 50% { transform: translateY(-10px); } }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add("js");try{const t=localStorage.getItem("retain-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/></linearGradient>
+    <symbol id="mark" viewBox="0 0 26 26">
+      <circle cx="13" cy="13" r="12" fill="url(#mg)"/>
+      <path d="M8 13.5l3.3 3.3L18.5 9" fill="none" stroke="var(--on-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 001.5.86l12.5-7.5a1 1 0 000-1.72L8.5 3.64A1 1 0 007 4.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4.2" height="16" rx="1.2"/><rect x="13.8" y="4" width="4.2" height="16" rx="1.2"/></symbol>
+    <symbol id="i-replay" viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 11-5 5H5a7 7 0 107-7z"/></symbol>
+    <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5v2H6v3zm11-5h5v5h-2V6h-3zM6 15v3h3v2H4v-5zm12 0h2v5h-5v-2h3z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<div id="progress" aria-hidden="true"></div>
+
+<header class="site-head" id="head">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg class="mark"><use href="#mark"/></svg>Retain</a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="link" href="#watch">Watch</a>
+      <a class="link" href="#product">Product</a>
+      <a class="link" href="#cost">Cost calculator</a>
+      <a class="link" href="#approach">Our approach</a>
+      <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>
+      </button>
+      <a class="btn sm" href="teacher-retention-app.html">Open the app</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="grid-bg" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="wrap">
+      <div class="chips" aria-hidden="true">
+        <div class="chip c1"><span class="av">AR</span><div>Ms. A. Rivera<small>No mentor assigned</small></div></div>
+        <div class="chip c2"><span class="av">JC</span><div>Ms. J. Chen<small>Transfer request</small></div></div>
+        <div class="chip c3"><span class="av">DO</span><div>Mr. D. Okafor<small>Retirement window</small></div></div>
+        <div class="chip c4"><span class="av">TM</span><div>T. Moreno<small>License expires</small></div></div>
+      </div>
+      <span class="badge reveal"><b>For schools</b>Built for principals and department chairs</span>
+      <h1 class="reveal" style="--d:.05s">See who's at risk of leaving, <span class="grad">and why.</span></h1>
+      <p class="sub reveal" style="--d:.12s">Retain reads your district's teacher files and flags the teachers who may leave, with the reason behind every flag.</p>
+      <div class="actions reveal" style="--d:.2s">
+        <a class="btn" href="teacher-retention-app.html">Try the app
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn ghost" href="#watch" id="hero-watch"><svg><use href="#i-play" fill="currentColor"/></svg>Watch the 30-second ad</a>
+      </div>
+      <p class="fine reveal" style="--d:.26s">No sign-up needed. The app opens with made-up sample teachers.</p>
+    </div>
+  </section>
+
+  <!-- Video -->
+  <section class="video-sec" id="watch" aria-label="Retain ad">
+    <div class="wrap reveal">
+      <div class="player" id="player">
+        <div class="frame-box"><iframe id="ad" title="Retain 30-second ad" tabindex="-1" loading="lazy"></iframe></div>
+        <button class="poster" id="poster" type="button" aria-label="Play the 30-second ad">
+          <span class="play-big"><svg><use href="#i-play"/></svg></span>
+          <span class="lbl">Keep your teachers. Skip the summer scramble. <span>0:30</span></span>
+        </button>
+        <div class="controls" id="controls">
+          <button type="button" id="pp" aria-label="Pause"><svg><use href="#i-pause"/></svg></button>
+          <input class="scrub" id="scrub" type="range" min="0" max="30" step="0.01" value="0" aria-label="Seek">
+          <span class="time" id="time">0:00 / 0:30</span>
+          <button type="button" id="fs" aria-label="Full screen"><svg><use href="#i-full"/></svg></button>
+        </div>
+      </div>
+      <div class="chapters" id="chapters" role="group" aria-label="Jump to a scene"></div>
+      <p class="video-note">The ad has no sound. Every teacher shown is made up.</p>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="section" id="problem">
+    <div class="wrap problem">
+      <div class="copy reveal">
+        <p class="kicker">The problem</p>
+        <h2>Another summer spent filling one spot.</h2>
+        <p class="quote">"Every time someone leaves, I'm scrambling all summer to fill the spot."<cite>A high school principal</cite></p>
+        <p class="lead">Most of the time, the warning signs were already in the files: a new teacher with no mentor, a transfer request, a retirement date coming up. Nobody had time to put them together.</p>
+      </div>
+      <div class="cal reveal" style="--d:.1s">
+        <div class="summer" id="summer" role="img" aria-label="June through August calendar with 24 interview days marked"></div>
+        <div class="tally">
+          <div><b>1</b>open position</div>
+          <div><b id="iv-count">0</b>interviews</div>
+          <button class="btn ghost sm" type="button" id="replay-cal"><svg><use href="#i-replay" fill="currentColor"/></svg>Replay</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="section" id="why" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="kicker">Why it matters</p>
+        <h2>Turnover is common, costly and stressful.</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="stat reveal">
+          <strong data-count="16" data-suffix="%">16%</strong>
+          <p>of public school teachers move schools or leave teaching every year.</p>
+          <a href="https://nces.ed.gov/programs/coe/indicator/slc/teacher-turnover" target="_blank" rel="noopener">NCES, 2024 ↗</a>
+        </div>
+        <div class="stat reveal" style="--d:.08s">
+          <strong class="long">$11,860–$24,930</strong>
+          <p>to replace one teacher, depending on district size, before counting the cost to student learning.</p>
+          <a href="https://learningpolicyinstitute.org/blog/when-teachers-leave-understanding-financial-impacts-schools" target="_blank" rel="noopener">Learning Policy Institute, 2024 ↗</a>
+        </div>
+        <div class="stat reveal" style="--d:.16s">
+          <strong data-count="74" data-suffix="%">74%</strong>
+          <p>of public schools struggled to fill at least one teaching position before the 2024–25 school year.</p>
+          <a href="https://www.edweek.org/leadership/schools-have-fewer-teacher-vacancies-this-year-but-hiring-is-still-not-easy/2024/10" target="_blank" rel="noopener">EdWeek / NCES, 2024 ↗</a>
+        </div>
+        <div class="stat reveal" style="--d:.24s">
+          <strong data-count="85" data-suffix="%">85%</strong>
+          <p>of principals report frequent job stress. Staffing is the most common cause.</p>
+          <a href="https://www.edweek.org/teaching-learning/stress-burnout-depression-teachers-and-principals-are-not-doing-well-new-data-confirm/2022/06" target="_blank" rel="noopener">EdWeek / RAND, 2022 ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product preview -->
+  <section class="section" id="product" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head center reveal">
+        <p class="kicker">Try it here</p>
+        <h2>Every flag in one place, <span class="grad">with the reason behind it.</span></h2>
+        <p>Run a scan, then select a name to see exactly which facts caused the flag and which file they came from.</p>
+      </div>
+      <div class="stage reveal">
+        <div class="mock">
+          <div class="mock-bar"><b><svg class="mark"><use href="#mark"/></svg>Retain</b><span class="school">Westfield High School · Principal</span></div>
+          <div class="mock-body">
+            <div class="mock-side" role="group" aria-label="Filter flags">
+              <button type="button" data-f="all" aria-pressed="true">All flags <span class="count" id="c-all">0</span></button>
+              <button type="button" data-f="current" aria-pressed="false">Current teachers <span class="count" id="c-current">0</span></button>
+              <button type="button" data-f="prospective" aria-pressed="false">Prospective hires <span class="count" id="c-prospective">0</span></button>
+            </div>
+            <div class="mock-main">
+              <div>
+                <div class="toolbar">
+                  <div><h3>Flags</h3><p class="meta" id="meta">Ready to scan 48 teachers and 5 candidates</p></div>
+                  <button class="btn sm" type="button" id="scan">Run a scan</button>
+                </div>
+                <div class="scanbar" aria-hidden="true"><i id="scanfill"></i></div>
+                <p class="label">Open flags</p>
+                <ul class="flags" id="flags" aria-live="polite"></ul>
+                <p class="hint" id="hint" hidden>Select a name to see why it was flagged.</p>
+              </div>
+              <div class="detail" id="detail" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="sample-note">Sample data. Every teacher and candidate shown is made up. <a href="teacher-retention-app.html">Open the full app →</a></p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="kicker">How Retain helps</p>
+        <h2>Spot the signs before the summer scramble starts.</h2>
+      </div>
+      <div class="features">
+        <div class="feature reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg></div>
+          <h3>Flags teachers at risk of leaving</h3>
+          <p>Retain reads each teacher's file and points out signs they may leave, such as a new teacher with no mentor or a pending transfer request.</p>
+        </div>
+        <div class="feature reveal" style="--d:.08s">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/></svg></div>
+          <h3>Explains every flag</h3>
+          <p>Each flag lists the facts that caused it and the file they came from, so you know what to address and can check it yourself.</p>
+        </div>
+        <div class="feature reveal" style="--d:.16s">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14c2 .8 3 3 3 6"/></svg></div>
+          <h3>Keeps candidates organized</h3>
+          <p>Prospective hires sit in one place with their own flags, like a license that expires before the start date, so you can fill open positions faster.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calculator -->
+  <section class="section" id="cost" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="kicker">Cost calculator</p>
+        <h2>What does turnover cost your school?</h2>
+        <p>Move the sliders to match your school. The estimate uses published averages, so treat it as a starting point.</p>
+      </div>
+      <div class="calc reveal">
+        <div class="calc-in">
+          <div class="field">
+            <div class="field-top"><label for="n-teachers">Teachers at your school</label><output id="o-teachers" for="n-teachers">60</output></div>
+            <input class="rng" id="n-teachers" type="range" min="10" max="250" step="1" value="60">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="n-rate">Teachers who leave each year</label><output id="o-rate" for="n-rate">16%</output></div>
+            <input class="rng" id="n-rate" type="range" min="4" max="35" step="1" value="16">
+            <p class="help">The national average is 16% (NCES, 2021–22).</p>
+          </div>
+          <div class="field">
+            <span class="flabel" id="size-l">District size</span>
+            <div class="seg" role="group" aria-labelledby="size-l" id="size">
+              <button type="button" data-cost="11860" aria-pressed="false">Small<small>under 10k students</small></button>
+              <button type="button" data-cost="16450" aria-pressed="true">Medium<small>10k–50k</small></button>
+              <button type="button" data-cost="24930" aria-pressed="false">Large<small>over 50k</small></button>
+            </div>
+          </div>
+        </div>
+        <div class="calc-out" aria-live="polite">
+          <div>
+            <p class="cap">Estimated cost of replacing teachers each year</p>
+            <p class="big" id="o-cost">$164,500</p>
+          </div>
+          <div class="people" id="people" aria-hidden="true"></div>
+          <div class="calc-row">
+            <div><b id="o-leave">10</b><span>teachers to replace each year</span></div>
+            <div><b id="o-each">$16,450</b><span>saved for every teacher you keep</span></div>
+          </div>
+          <p class="calc-src">Replacement costs from the <a href="https://learningpolicyinstitute.org/blog/when-teachers-leave-understanding-financial-impacts-schools" target="_blank" rel="noopener">Learning Policy Institute (2024)</a>. They leave out the cost to student learning.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Approach -->
+  <section class="section" id="approach" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="kicker">Our approach</p>
+        <h2>Retain reads and flags. The decisions stay with you.</h2>
+      </div>
+      <div class="limits">
+        <div class="limit reveal"><span class="num"><svg><use href="#i-check"/></svg></span><h3>It never contacts anyone</h3><p>No emails, calls or messages go to teachers or candidates. You decide who to talk to.</p></div>
+        <div class="limit reveal" style="--d:.06s"><span class="num"><svg><use href="#i-check"/></svg></span><h3>It doesn't make assumptions</h3><p>A flag is a sign worth checking, not a judgment about a person.</p></div>
+        <div class="limit reveal" style="--d:.12s"><span class="num"><svg><use href="#i-check"/></svg></span><h3>It only uses what's in your files</h3><p>Every fact comes from your district's records. If something is missing, Retain asks you instead of guessing.</p></div>
+        <div class="limit reveal" style="--d:.18s"><span class="num"><svg><use href="#i-check"/></svg></span><h3>It sticks to hiring and retention</h3><p>Payroll, benefits and discipline stay in the systems you already use.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Close -->
+  <section class="close-wrap">
+    <div class="wrap">
+      <div class="close reveal">
+        <div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+        <h2>Keep your teachers. Skip the <span>summer scramble.</span></h2>
+        <p>Open Retain and explore it with sample teacher files. No sign-up needed.</p>
+        <div class="actions">
+          <a class="btn" href="teacher-retention-app.html">Open the app
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn ghost" href="#watch" data-play>Watch the ad again</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Retain · Teacher retention and hiring for high schools</span>
+    <span>All teachers and schools shown are examples. <a href="#top">Back to top ↑</a></span>
+  </div>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+
+/* ---------- Theme ---------- */
+$("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("retain-theme", root.dataset.theme); } catch (e) {}
+});
+
+/* ---------- Header, progress bar, active nav ---------- */
+const head = $("head"), bar = $("progress");
+const navLinks = [...document.querySelectorAll(".site-nav a.link")];
+function onScroll() {
+  const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+  head.classList.toggle("scrolled", y > 8);
+  bar.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
+  let active = null;
+  for (const a of navLinks) {
+    const s = document.querySelector(a.getAttribute("href"));
+    if (s && s.getBoundingClientRect().top < innerHeight * .4) active = a;
+  }
+  navLinks.forEach(a => a.classList.toggle("active", a === active));
+}
+addEventListener("scroll", onScroll, { passive: true });
+onScroll();
+
+/* ---------- Reveal + one-shot triggers ---------- */
+const triggers = new Map();
+const io = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    e.target.classList.add("in");
+    const fn = triggers.get(e.target);
+    if (fn) { triggers.delete(e.target); fn(); }
+    io.unobserve(e.target);
+  }
+}, { threshold: 0.18, rootMargin: "0px 0px -40px 0px" });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+function whenSeen(el, fn) { triggers.set(el, fn); io.observe(el); }
+
+/* ---------- Count-up stats ---------- */
+function countUp(el, to, suffix = "", ms = 1200) {
+  if (reduce) { el.textContent = to + suffix; return; }
+  const t0 = performance.now();
+  (function step(now) {
+    const p = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(to * e) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+document.querySelectorAll("[data-count]").forEach(el => {
+  el.textContent = "0" + el.dataset.suffix;
+  whenSeen(el.closest(".stat"), () => countUp(el, +el.dataset.count, el.dataset.suffix));
+});
+
+/* ---------- Feature hover glow ---------- */
+document.querySelectorAll(".feature").forEach(f => f.addEventListener("pointermove", e => {
+  const r = f.getBoundingClientRect();
+  f.style.setProperty("--mx", (e.clientX - r.left) + "px");
+  f.style.setProperty("--my", (e.clientY - r.top) + "px");
+}));
+
+/* ---------- Summer calendar ---------- */
+const months = [
+  { name: "June", start: 1, days: 30, iv: [4, 9, 11, 15, 17, 22, 25, 30] },
+  { name: "July", start: 3, days: 31, iv: [2, 8, 10, 14, 16, 21, 23, 28, 30] },
+  { name: "August", start: 6, days: 31, iv: [4, 6, 11, 13, 18, 20, 25] }
+];
+$("summer").innerHTML = months.map(m => {
+  let cells = "";
+  for (let i = 0; i < m.start; i++) cells += '<span class="blank"></span>';
+  for (let d = 1; d <= m.days; d++) cells += `<span class="${m.iv.includes(d) ? "iv" : ""}"></span>`;
+  return `<div class="month"><h4>${m.name}</h4><div class="days">${cells}</div></div>`;
+}).join("");
+let calTimers = [];
+function playCalendar() {
+  calTimers.forEach(clearTimeout); calTimers = [];
+  const ivs = [...document.querySelectorAll("#summer .iv")];
+  ivs.forEach(s => s.classList.remove("on"));
+  $("iv-count").textContent = "0";
+  ivs.forEach((s, i) => calTimers.push(setTimeout(() => {
+    s.classList.add("on"); $("iv-count").textContent = i + 1;
+  }, reduce ? 0 : 200 + i * 90)));
+}
+whenSeen(document.querySelector(".cal"), playCalendar);
+$("replay-cal").addEventListener("click", playCalendar);
+
+/* ---------- Product preview ---------- */
+const FLAGS = [
+  { name: "Ms. A. Rivera", init: "AR", type: "current", role: "Biology · Current teacher", reason: "Early career, no mentor",
+    why: [["2nd year in the district", "Personnel file"], ["No mentor assigned", "Mentoring roster"], ["No mentor requested for next year", "Mentoring roster"]],
+    next: "Assign a mentor before the school year ends." },
+  { name: "Ms. L. Ortiz", init: "LO", type: "current", role: "English · Current teacher", reason: "Early career, no mentor",
+    why: [["1st year in the district", "Personnel file"], ["No mentor assigned", "Mentoring roster"]],
+    next: "Pair her with a mentor in the English department." },
+  { name: "Ms. J. Chen", init: "JC", type: "current", role: "Chemistry · Current teacher", reason: "Transfer request",
+    why: [["Transfer request filed for next year", "HR requests"], ["Requested a school closer to home", "HR requests"]],
+    next: "Meet with her before the request is processed." },
+  { name: "Mr. D. Okafor", init: "DO", type: "current", role: "U.S. History · Current teacher", reason: "Retirement window",
+    why: [["29 years of service", "Personnel file"], ["Eligible for full retirement next year", "Retirement records"]],
+    next: "Ask about his plans and start a posting early if needed." },
+  { name: "Mr. R. Patel", init: "RP", type: "current", role: "Mathematics · Current teacher", reason: "Heavy teaching load",
+    why: [["6 sections this semester (school norm is 5)", "Course schedule"], ["2 new course preps this year", "Course schedule"]],
+    next: "Review his schedule for next year." },
+  { name: "T. Moreno", init: "TM", type: "prospective", role: "Spanish · Prospective hire", reason: "Candidate license",
+    why: [["Teaching license expires before the start date", "Application file"], ["No renewal on file", "Application file"]],
+    next: "Ask about license renewal before making an offer." }
+];
+const list = $("flags"), detail = $("detail");
+let found = [], filter = "all", selected = -1, scanning = false;
+
+function counts() {
+  $("c-all").textContent = found.length;
+  $("c-current").textContent = found.filter(i => FLAGS[i].type === "current").length;
+  $("c-prospective").textContent = found.filter(i => FLAGS[i].type === "prospective").length;
+}
+function renderList() {
+  const shown = found.filter(i => filter === "all" || FLAGS[i].type === filter);
+  list.innerHTML = shown.length ? shown.map(i => { const f = FLAGS[i];
+    return `<li><button type="button" aria-pressed="${i === selected}" data-i="${i}"><span>${esc(f.name)}</span><span class="tag">${esc(f.reason)}</span></button></li>`;
+  }).join("") : `<li class="empty">${scanning ? "Scanning…" : found.length ? "No flags in this group." : "Run a scan to find flags."}</li>`;
+}
+function show(i) {
+  selected = i;
+  list.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.i === i ? "true" : "false"));
+  detail.classList.add("fade");
+  setTimeout(() => {
+    if (i < 0) { detail.innerHTML = ""; detail.classList.remove("fade"); return; }
+    const f = FLAGS[i];
+    detail.innerHTML = `
+      <div class="person">
+        <div class="avatar">${f.init}</div>
+        <div><h4>${esc(f.name)}</h4><p>${esc(f.role)} · Westfield High School</p><span class="pill">Flagged: ${f.type === "prospective" ? "check before hiring" : "may leave"}</span></div>
+      </div>
+      <div>
+        <p class="label" style="margin-top:0">Why this flag</p>
+        <ul class="why">${f.why.map(([t, s], k) => `<li style="animation-delay:${k * 70}ms">${esc(t)}<small>${esc(s)}</small></li>`).join("")}</ul>
+      </div>
+      <div class="next"><p class="label">Possible next step</p><p>${esc(f.next)}</p></div>`;
+    detail.classList.remove("fade");
+  }, 160);
+}
+function scan() {
+  if (scanning) return;
+  scanning = true; found = []; selected = -1; counts(); renderList(); show(-1);
+  $("hint").hidden = true; $("scan").disabled = true; $("scan").textContent = "Scanning…";
+  const total = 53, ms = reduce ? 1 : 2200, t0 = performance.now();
+  const hitAt = [6, 13, 21, 30, 38, 49]; // file numbers where flags are found
+  (function step(now) {
+    const p = Math.min(1, (now - t0) / ms), n = Math.round(p * total);
+    $("scanfill").style.width = (p * 100) + "%";
+    $("meta").textContent = `Reading file ${n} of ${total}…`;
+    let changed = false;
+    while (found.length < hitAt.length && n >= hitAt[found.length]) { found.push(found.length); changed = true; }
+    if (changed) { counts(); renderList(); }
+    if (p < 1) return requestAnimationFrame(step);
+    scanning = false;
+    $("meta").textContent = `${found.length} open · 48 teachers and 5 candidates checked`;
+    $("scan").disabled = false; $("scan").textContent = "Scan again"; $("hint").hidden = false;
+    renderList(); show(0);
+  })(t0);
+}
+list.addEventListener("click", e => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
+document.querySelectorAll(".mock-side button").forEach(b => b.addEventListener("click", () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".mock-side button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  renderList();
+  const shown = found.filter(i => filter === "all" || FLAGS[i].type === filter);
+  if (shown.length && !shown.includes(selected)) show(shown[0]);
+}));
+$("scan").addEventListener("click", scan);
+renderList();
+whenSeen(document.querySelector(".stage"), () => setTimeout(scan, 400));
+
+/* ---------- Cost calculator ---------- */
+const nT = $("n-teachers"), nR = $("n-rate");
+let costEach = 16450, shownCost = 0, costAnim;
+function fillRange(r) { r.style.setProperty("--p", ((r.value - r.min) / (r.max - r.min) * 100) + "%"); }
+function calc() {
+  const teachers = +nT.value, rate = +nR.value / 100;
+  const leave = Math.round(teachers * rate), total = leave * costEach;
+  $("o-teachers").textContent = teachers;
+  $("o-rate").textContent = nR.value + "%";
+  $("o-leave").textContent = leave;
+  $("o-each").textContent = money(costEach);
+  fillRange(nT); fillRange(nR);
+  const dots = Math.min(teachers, 250);
+  $("people").innerHTML = Array.from({ length: dots }, (_, i) => `<i class="${i < leave ? "gone" : ""}"></i>`).join("");
+  cancelAnimationFrame(costAnim);
+  const from = shownCost, t0 = performance.now();
+  (function step(now) {
+    const p = reduce ? 1 : Math.min(1, (now - t0) / 450), e = 1 - Math.pow(1 - p, 3);
+    shownCost = from + (total - from) * e;
+    $("o-cost").textContent = money(shownCost);
+    if (p < 1) costAnim = requestAnimationFrame(step);
+  })(t0);
+}
+nT.addEventListener("input", calc); nR.addEventListener("input", calc);
+document.querySelectorAll("#size button").forEach(b => b.addEventListener("click", () => {
+  costEach = +b.dataset.cost;
+  document.querySelectorAll("#size button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  calc();
+}));
+calc();
+
+/* ---------- Video player ---------- */
+const AD = "retention-ad-30s.html";
+const CHAPTERS = [
+  { t: 0, name: "The summer scramble" },
+  { t: 2.95, name: "Reads your files" },
+  { t: 9.15, name: "Flags who might leave" },
+  { t: 17.1, name: "Inside the app" },
+  { t: 25.3, name: "Keep your teachers" }
+];
+const player = $("player"), frame = $("ad"), scrub = $("scrub");
+let adWin = null, DUR = 30, cur = 0, playing = false, last = 0, mode = null, idleTimer;
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+$("chapters").innerHTML = CHAPTERS.map((c, i) =>
+  `<button class="chapter" type="button" data-t="${c.t}"><small>${fmt(c.t)}</small><b>${esc(c.name)}</b><i></i></button>`).join("");
+
+function fitFrame() {
+  const w = player.clientWidth, h = player.clientHeight;
+  const s = Math.min(w / 1920, h / 1080);
+  frame.style.transform = `translate(${(w - 1920 * s) / 2}px, ${(h - 1080 * s) / 2}px) scale(${s})`;
+}
+new ResizeObserver(fitFrame).observe(player);
+
+function loadAd() {
+  if (mode) return Promise.resolve();
+  return new Promise(res => {
+    frame.addEventListener("load", () => {
+      try {
+        const w = frame.contentWindow;
+        if (typeof w.render !== "function") throw 0;
+        adWin = w; DUR = w.DURATION || 30; mode = "controlled";
+        scrub.max = DUR;
+      } catch (e) {
+        // Browser blocked access to the ad file (e.g. opened straight from disk). Let the ad play on its own.
+        mode = "native";
+        player.classList.add("native");
+        frame.src = AD;
+      }
+      res();
+    }, { once: true });
+    frame.src = AD + "?render";
+  });
+}
+function draw() {
+  if (adWin) adWin.render(Math.min(cur, DUR - 0.001));
+  const pct = (cur / DUR) * 100;
+  scrub.value = cur; scrub.style.setProperty("--p", pct + "%");
+  $("time").textContent = `${fmt(cur)} / ${fmt(DUR)}`;
+  document.querySelectorAll(".chapter").forEach((c, i) => {
+    const a = CHAPTERS[i].t, b = i + 1 < CHAPTERS.length ? CHAPTERS[i + 1].t : DUR;
+    const on = cur >= a && (cur < b || (i === CHAPTERS.length - 1));
+    c.classList.toggle("on", on);
+    c.querySelector("i").style.width = (on ? Math.min(100, (cur - a) / (b - a) * 100) : cur >= b ? 100 : 0) + "%";
+  });
+}
+function setIcon() {
+  const ended = cur >= DUR - 0.01;
+  $("pp").innerHTML = `<svg><use href="#i-${playing ? "pause" : ended ? "replay" : "play"}"/></svg>`;
+  $("pp").setAttribute("aria-label", playing ? "Pause" : ended ? "Replay" : "Play");
+  player.classList.toggle("playing", playing);
+}
+function tick(now) {
+  if (!playing) return;
+  cur += (now - last) / 1000; last = now;
+  if (cur >= DUR) { cur = DUR; playing = false; }
+  draw(); setIcon();
+  if (playing) requestAnimationFrame(tick);
+}
+async function play(from) {
+  await loadAd();
+  player.classList.add("started");
+  $("poster").classList.add("hide");
+  if (mode === "native") return;
+  if (from !== undefined) cur = from;
+  if (cur >= DUR - 0.01) cur = 0;
+  if (!playing) { playing = true; last = performance.now(); requestAnimationFrame(tick); }
+  setIcon(); poke();
+}
+function pause() { playing = false; setIcon(); player.classList.remove("idle"); }
+function poke() {
+  player.classList.remove("idle"); clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => player.classList.add("idle"), 2200);
+}
+
+$("poster").addEventListener("click", () => play());
+$("pp").addEventListener("click", () => playing ? pause() : play());
+scrub.addEventListener("input", () => { cur = +scrub.value; draw(); setIcon(); });
+player.addEventListener("pointermove", poke);
+player.addEventListener("keydown", e => { if (e.key === " " && e.target === player) { e.preventDefault(); playing ? pause() : play(); } });
+player.tabIndex = 0;
+$("fs").addEventListener("click", () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else player.requestFullscreen?.();
+});
+document.addEventListener("fullscreenchange", fitFrame);
+$("chapters").addEventListener("click", async e => {
+  const b = e.target.closest(".chapter"); if (!b) return;
+  await play(+b.dataset.t);
+  if (mode === "controlled") draw();
+});
+document.querySelectorAll('a[href="#watch"]').forEach(a => a.addEventListener("click", () => setTimeout(() => play(0), reduce ? 0 : 450)));
+
+// Show a still frame from the flag scene behind the play button once the player is near.
+whenSeen(player, () => loadAd().then(() => { if (mode === "controlled" && !player.classList.contains("started")) { cur = 13; draw(); cur = 0; } }));
+</script>
+</body>
+</html>
