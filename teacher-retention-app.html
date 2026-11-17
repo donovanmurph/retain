@@ -8,14 +8,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
 <style>
-/* Matches the Retain website: white page, soft blue-grey panels, DM Sans,
-   medium-weight headings, pill buttons and nav, one blue accent, amber for flags. */
+/* Matches the Retain website: DM Sans, pill controls, soft panels.
+   Each section has its own color so you always know where you are:
+   Flags = amber, Current teachers = blue, Prospective hires = violet,
+   Openings = teal, District files = slate. */
 :root {
   --bg: #ffffff; --tint: #f0f4f9; --tint-2: #e8eef7; --surface: #ffffff;
   --ink: #1f1f1f; --muted: #5f6368; --line: #e3e7ee;
   --accent: #0b57d0; --accent-soft: #d3e3fd; --accent-ink: #041e49; --on-accent: #ffffff;
   --warn: #f9ab00; --warn-soft: #feefc3; --warn-ink: #5c3c00;
   --green: #146c2e; --green-soft: #c4eed0; --red: #b3261e;
+  --c-flags: #b26a00; --c-flags-soft: #feefc3; --c-flags-ink: #5c3c00;
+  --c-teach: #0b57d0; --c-teach-soft: #d3e3fd; --c-teach-ink: #041e49;
+  --c-cand:  #8430ce; --c-cand-soft:  #f0e2fd; --c-cand-ink:  #3a0b66;
+  --c-open:  #00796b; --c-open-soft:  #c9efe8; --c-open-ink:  #00332c;
+  --c-files: #5f6368; --c-files-soft: #e8eaed; --c-files-ink: #202124;
+  --s: var(--c-teach); --s-soft: var(--c-teach-soft); --s-ink: var(--c-teach-ink);
   --font: "DM Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   color-scheme: light;
 }
@@ -26,6 +34,11 @@
     --accent: #a8c7fa; --accent-soft: #0842a0; --accent-ink: #d3e3fd; --on-accent: #062e6f;
     --warn: #fdd663; --warn-soft: #3d3000; --warn-ink: #feefc3;
     --green: #81c995; --green-soft: #0f3d1f; --red: #f2b8b5;
+    --c-flags: #fdd663; --c-flags-soft: #3d3000; --c-flags-ink: #feefc3;
+    --c-teach: #a8c7fa; --c-teach-soft: #0842a0; --c-teach-ink: #d3e3fd;
+    --c-cand:  #d7aefb; --c-cand-soft:  #4b1a78; --c-cand-ink:  #f3e6ff;
+    --c-open:  #6fdbc8; --c-open-soft:  #004a40; --c-open-ink:  #c9efe8;
+    --c-files: #bdc1c6; --c-files-soft: #303134; --c-files-ink: #e8eaed;
     color-scheme: dark;
   }
 }
@@ -35,120 +48,190 @@
   --accent: #a8c7fa; --accent-soft: #0842a0; --accent-ink: #d3e3fd; --on-accent: #062e6f;
   --warn: #fdd663; --warn-soft: #3d3000; --warn-ink: #feefc3;
   --green: #81c995; --green-soft: #0f3d1f; --red: #f2b8b5;
+  --c-flags: #fdd663; --c-flags-soft: #3d3000; --c-flags-ink: #feefc3;
+  --c-teach: #a8c7fa; --c-teach-soft: #0842a0; --c-teach-ink: #d3e3fd;
+  --c-cand:  #d7aefb; --c-cand-soft:  #4b1a78; --c-cand-ink:  #f3e6ff;
+  --c-open:  #6fdbc8; --c-open-soft:  #004a40; --c-open-ink:  #c9efe8;
+  --c-files: #bdc1c6; --c-files-soft: #303134; --c-files-ink: #e8eaed;
   color-scheme: dark;
 }
+[data-c="flags"] { --s: var(--c-flags); --s-soft: var(--c-flags-soft); --s-ink: var(--c-flags-ink); }
+[data-c="teach"] { --s: var(--c-teach); --s-soft: var(--c-teach-soft); --s-ink: var(--c-teach-ink); }
+[data-c="cand"]  { --s: var(--c-cand);  --s-soft: var(--c-cand-soft);  --s-ink: var(--c-cand-ink); }
+[data-c="open"]  { --s: var(--c-open);  --s-soft: var(--c-open-soft);  --s-ink: var(--c-open-ink); }
+[data-c="files"] { --s: var(--c-files); --s-soft: var(--c-files-soft); --s-ink: var(--c-files-ink); }
+
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16.5px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:disabled { cursor: default; }
 input, select, textarea { font: inherit; color: var(--ink); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
-.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+.ic { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-/* Site chrome */
-.topbar { background: var(--tint); color: var(--muted); font-size: 13px; }
-.topbar .wrap { padding-block: 7px; display: flex; justify-content: space-between; gap: 6px 20px; flex-wrap: wrap; }
-.topbar #banner { color: var(--warn-ink); background: var(--warn-soft); padding: 1px 10px; border-radius: 999px; font-weight: 500; }
-header.site { background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(14px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--line); }
-header.site .brandrow { padding-block: 14px 6px; display: flex; align-items: center; gap: 10px; }
-.mark { width: 28px; height: 28px; flex: none; }
-.site-name { font-size: 21px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.site-name small { font-size: 14px; color: var(--muted); font-weight: 400; letter-spacing: 0; }
-
-nav.menu .wrap { display: flex; gap: 6px; overflow-x: auto; padding-block: 6px 12px; }
-.nav { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; color: var(--muted); font-weight: 500; font-size: 15px; white-space: nowrap; transition: background .15s; }
-.nav:hover { background: var(--tint); color: var(--ink); }
-.nav.on { background: var(--accent-soft); color: var(--accent-ink); }
-.nav.files { margin-left: auto; }
-.count { min-width: 22px; height: 22px; border-radius: 999px; padding: 0 7px; font-size: 12px; font-weight: 600; line-height: 22px; text-align: center; background: var(--tint-2); color: var(--ink); }
-.nav.on .count { background: var(--surface); color: var(--accent-ink); }
+/* Layout: sidebar + page */
+.shell { display: grid; grid-template-columns: 256px minmax(0, 1fr); min-height: 100vh; }
+.side { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 22px 14px 18px; background: var(--tint); border-right: 1px solid var(--line); overflow-y: auto; z-index: 5; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 18px; }
+.mark { width: 30px; height: 30px; flex: none; }
+.site-name { font-size: 21px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; }
+.site-name small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; letter-spacing: 0; margin-top: 2px; }
+.banner { display: inline-block; color: var(--warn-ink); background: var(--warn-soft); padding: 3px 10px; border-radius: 12px; font-weight: 500; font-size: 12.5px; line-height: 1.4; }
+.banner.bm { display: none; }
+.navlist { display: flex; flex-direction: column; gap: 3px; }
+.ngl { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 14px 12px 4px; }
+.ngl:first-child { margin-top: 0; }
+.nav { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 14px; font-weight: 500; font-size: 15px; white-space: nowrap; text-align: left; transition: background .15s, box-shadow .15s; }
+.nav:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.nico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--s-soft); color: var(--s-ink); flex: none; transition: background .15s, color .15s; }
+.nico .ic { width: 18px; height: 18px; }
+.nav .nl { flex: 1; }
+.nav.on { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.08), inset 4px 0 0 var(--s); }
+.nav.on .nico { background: var(--s); color: var(--bg); }
+.count { min-width: 24px; height: 22px; border-radius: 999px; padding: 0 7px; font-size: 12px; font-weight: 600; line-height: 22px; text-align: center; background: var(--tint-2); color: var(--ink); }
+.nav.on .count { background: var(--s-soft); color: var(--s-ink); }
 .count.gold, .nav.on .count.gold { background: var(--warn); color: #3a2600; }
+.sidefoot { margin-top: auto; padding: 18px 10px 0; font-size: 12.5px; color: var(--muted); }
+.sidefoot p { margin: 8px 0 0; }
 
+.page { min-width: 0; display: flex; flex-direction: column; min-height: 100vh; }
 main { flex: 1; }
 main:focus { outline: none; }
 footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; margin-top: 16px; }
-footer .wrap { padding-block: 26px; }
+footer .wrap { padding-block: 22px; }
 
-/* Hero, headings */
-.hero .wrap { padding-block: 52px 8px; }
+/* Section header card */
+.hero .wrap { padding-top: 28px; }
+.herocard { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; padding: 30px 34px; border-radius: 28px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--s-soft) 90%, var(--bg)), color-mix(in srgb, var(--s-soft) 30%, var(--bg)));
+  border: 1px solid color-mix(in srgb, var(--s) 22%, transparent); }
+.hico { width: 64px; height: 64px; border-radius: 20px; background: var(--s); color: var(--bg); display: grid; place-items: center; flex: none; }
+.hico .ic { width: 30px; height: 30px; }
+.herocard .who { flex: 1 1 260px; min-width: 0; }
 h1, h2 { font-weight: 500; letter-spacing: -0.025em; text-wrap: balance; margin: 0; color: var(--ink); line-height: 1.12; }
-h1 { font-size: clamp(34px, 5vw, 52px); }
-.subhead { margin: 12px 0 0; max-width: 62ch; color: var(--muted); font-size: 18px; }
-.eyebrow { font-size: 15px; font-weight: 500; color: var(--accent); margin: 0 0 10px; }
+h1 { font-size: clamp(30px, 4vw, 44px); }
+.subhead { margin: 8px 0 0; max-width: 64ch; color: var(--muted); font-size: 17px; }
+.eyebrow { font-size: 14px; font-weight: 600; color: var(--s); margin: 0 0 6px; letter-spacing: .01em; }
+.herocard .eyebrow { color: var(--s-ink); opacity: .85; }
 .label { font-size: 13px; font-weight: 500; color: var(--muted); margin: 0 0 6px; }
-h2.sec { font-size: 24px; display: block; margin-bottom: 18px; }
-.content { padding-block: 32px 80px; }
-.spaced { margin-top: 56px; }
+h2.sec { font-size: 22px; display: block; margin-bottom: 16px; }
+.content { padding-block: 26px 72px; }
+.spaced { margin-top: 48px; }
+.muted { color: var(--muted); font-weight: 400; }
 
 /* Controls */
-.tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 28px; }
-.search { flex: 1 1 240px; max-width: 360px; padding: 11px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.tools { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; margin-bottom: 20px; }
+.search { flex: 1 1 240px; max-width: 380px; padding: 11px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
 .select { padding: 11px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
-.search:focus, .select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
-.check { display: flex; gap: 8px; align-items: center; color: var(--muted); font-weight: 500; cursor: pointer; }
-.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.search:focus, .select:focus { outline: 2px solid var(--s); outline-offset: -1px; border-color: transparent; }
+.selwrap { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.selwrap .label { margin: 0; }
 .seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: var(--tint); }
 .seg button { padding: 8px 16px; border-radius: 999px; font-weight: 500; font-size: 15px; color: var(--muted); white-space: nowrap; }
 .seg button:hover { color: var(--ink); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .seg.small button { padding: 5px 12px; font-size: 13.5px; }
-.btn { display: inline-flex; align-items: center; justify-content: center; background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: 15px; padding: 12px 22px; border-radius: 999px; transition: box-shadow .2s, filter .2s; }
-.btn:hover { filter: brightness(1.06); box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--accent) 60%, transparent); }
-.btn.ghost { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--line); }
+.btn { display: inline-flex; align-items: center; justify-content: center; background: var(--s); color: var(--bg); font-weight: 500; font-size: 15px; padding: 12px 22px; border-radius: 999px; transition: box-shadow .2s, filter .2s; }
+.btn:hover { filter: brightness(1.06); box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--s) 60%, transparent); }
+.btn.ghost { background: transparent; color: var(--s); box-shadow: inset 0 0 0 1px var(--line); }
 .btn.ghost:hover { background: var(--tint); filter: none; }
 .linkish { color: var(--accent); font-weight: 500; }
 .linkish:hover { text-decoration: underline; text-underline-offset: 3px; }
 .err { color: var(--red); font-weight: 500; font-size: 14.5px; margin: 8px 0 0; }
 
+/* Status tiles (Flags page) */
+.stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat { display: flex; align-items: baseline; gap: 10px; min-width: 150px; padding: 12px 18px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); text-align: left; transition: background .15s, border-color .15s; }
+.stat b { font-size: 28px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { font-weight: 500; color: var(--muted); }
+.stat:hover { border-color: var(--t); }
+.stat[data-tone="open"] { --t: var(--warn); --ts: var(--warn-soft); --ti: var(--warn-ink); }
+.stat[data-tone="progress"] { --t: var(--accent); --ts: var(--accent-soft); --ti: var(--accent-ink); }
+.stat[data-tone="resolved"] { --t: var(--green); --ts: var(--green-soft); --ti: var(--green); }
+.stat[aria-pressed="true"] { background: var(--ts); border-color: var(--t); box-shadow: inset 0 0 0 1px var(--t); }
+.stat[aria-pressed="true"] span, .stat[aria-pressed="true"] b { color: var(--ti); }
+
+/* Filter chips (lists) */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 22px; padding: 14px 16px; border-radius: 20px; background: var(--tint); }
+.chips .label { margin: 0 6px 0 2px; font-weight: 600; color: var(--ink); }
+.chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-weight: 500; font-size: 14px; white-space: nowrap; transition: background .15s, border-color .15s; }
+.chip .ic { width: 15px; height: 15px; color: var(--c-flags); }
+.chip .cc { font-size: 12px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip:hover:not(:disabled) { border-color: var(--s); }
+.chip[aria-pressed="true"] { background: var(--s); border-color: var(--s); color: var(--bg); }
+.chip[aria-pressed="true"] .ic, .chip[aria-pressed="true"] .cc { color: var(--bg); }
+.chip:disabled { opacity: .45; }
+
 /* Tables */
 .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 24px; }
 table { border-collapse: collapse; width: 100%; }
-th { text-align: left; font-size: 13px; font-weight: 500; color: var(--muted); padding: 14px 18px; background: var(--tint); white-space: nowrap; }
+th { text-align: left; font-size: 13px; font-weight: 600; color: var(--s-ink); padding: 14px 18px; background: color-mix(in srgb, var(--s-soft) 55%, var(--bg)); white-space: nowrap; }
 td { padding: 14px 18px; border-top: 1px solid var(--line); vertical-align: middle; }
 tbody tr[data-id] { cursor: pointer; }
 tbody tr[data-id]:hover td { background: var(--tint); }
+tbody tr.flagged td:first-child { box-shadow: inset 4px 0 0 var(--warn); }
 td.nm { font-weight: 500; white-space: nowrap; }
 td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ok { color: var(--muted); }
-.missing { color: var(--muted); font-weight: 500; font-size: 14px; }
-.flag { display: inline-block; background: var(--warn-soft); color: var(--warn-ink); font-weight: 500; font-size: 12.5px; line-height: 1.4; padding: 4px 11px; border-radius: 999px; white-space: nowrap; margin: 2px 4px 2px 0; }
+.missing { color: var(--red); font-weight: 500; font-size: 14px; }
+.flag { display: inline-flex; align-items: center; gap: 5px; background: var(--warn-soft); color: var(--warn-ink); font-weight: 500; font-size: 12.5px; line-height: 1.4; padding: 4px 11px 4px 9px; border-radius: 999px; white-space: nowrap; margin: 2px 4px 2px 0; }
+.flag .ic { width: 14px; height: 14px; }
 .flag.prog { background: transparent; box-shadow: inset 0 0 0 1px var(--warn); }
 .empty { color: var(--muted); padding: 24px 18px; }
+.kdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--s); margin-right: 7px; vertical-align: 1px; }
 
 /* Flags page */
-.flagsgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 32px; align-items: start; }
-.flagsgrid > section { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 24px; }
-.bar { margin-bottom: 18px; }
-.bar .bl { display: flex; justify-content: space-between; gap: 12px; font-weight: 500; margin-bottom: 6px; }
-.bar .bl b { font-weight: 500; font-variant-numeric: tabular-nums; }
-.bar .bt { height: 8px; background: var(--tint); border-radius: 999px; overflow: hidden; }
-.bar .bf { height: 100%; background: var(--accent); opacity: .45; border-radius: 999px; }
-.bar.top .bf { opacity: 1; }
-.orow { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 16px; text-align: left; transition: background .15s; }
+.flagsgrid { display: grid; grid-template-columns: minmax(250px, 320px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 22px; }
+.filterpanel { position: sticky; top: 20px; }
+.phd { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.panel .ngl { margin: 16px 8px 4px; }
+.rrow { display: flex; width: 100%; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 14px; text-align: left; transition: background .15s; }
+.rrow:hover:not(:disabled) { background: var(--tint); }
+.rrow:disabled { opacity: .45; }
+.rrow.on { background: var(--c-flags-soft); box-shadow: inset 0 0 0 1px var(--c-flags); }
+.rico { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn-ink); flex: none; }
+.rico .ic { width: 17px; height: 17px; }
+.rrow.on .rico { background: var(--c-flags); color: var(--bg); }
+.rl { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.rn { font-weight: 500; font-size: 15px; line-height: 1.25; }
+.bt { height: 5px; background: var(--tint-2); border-radius: 999px; overflow: hidden; }
+.bf { display: block; height: 100%; background: var(--warn); border-radius: 999px; }
+.rc { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 20px; text-align: right; }
+.hl { color: var(--c-flags); }
+.orow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; width: 100%; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 16px; text-align: left; transition: background .15s; }
+.orow + .orow { border-top: 1px solid var(--line); }
 .orow:hover { background: var(--tint); }
 .orow .n { font-weight: 500; }
 .orow .n small { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
 .reason { font-weight: 500; font-size: 12.5px; color: var(--warn-ink); background: var(--warn-soft); padding: 4px 11px; border-radius: 14px; white-space: nowrap; text-align: right; }
 .reason small { display: block; font-weight: 400; opacity: .8; font-size: 12px; }
+.reason.prog { background: var(--accent-soft); color: var(--accent-ink); }
 .reason.done { background: var(--green-soft); color: var(--green); }
+.rico.done { background: var(--green-soft); color: var(--green); }
+.rico.prog { background: var(--accent-soft); color: var(--accent-ink); }
 .note { margin-top: 20px; padding: 16px 20px; background: var(--tint); border-radius: 20px; }
 .note b { font-weight: 600; }
+.clearbtn { margin-top: 8px; }
 
 /* Person page */
-.back { color: var(--muted); font-weight: 500; margin: 0 0 20px -14px; padding: 8px 14px; border-radius: 999px; display: inline-flex; gap: 8px; }
+.back { color: var(--muted); font-weight: 500; margin: 0 0 12px -14px; padding: 8px 14px; border-radius: 999px; display: inline-flex; gap: 8px; }
 .back:hover { background: var(--tint); color: var(--ink); }
-.phead { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-.av { width: 84px; height: 84px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; font-size: 28px; line-height: 84px; text-align: center; flex: none; }
-.phead .who { flex: 1 1 260px; min-width: 0; }
-.phead .subhead { margin-top: 6px; }
+.av { width: 76px; height: 76px; border-radius: 50%; background: var(--s); color: var(--bg); font-weight: 600; font-size: 26px; line-height: 76px; text-align: center; flex: none; }
 .pbadge { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-.clear { display: inline-block; color: var(--muted); font-weight: 500; font-size: 13px; box-shadow: inset 0 0 0 1px var(--line); padding: 4px 12px; border-radius: 999px; }
+.clear { display: inline-block; color: var(--muted); font-weight: 500; font-size: 13px; box-shadow: inset 0 0 0 1px var(--line); padding: 4px 12px; border-radius: 999px; background: var(--surface); }
 .clear.done { color: var(--green); background: var(--green-soft); box-shadow: none; }
 .pbody { max-width: 880px; }
-.fblock { margin-bottom: 20px; border: 1px solid var(--line); border-radius: 24px; padding: 26px 28px; }
-.fhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 20px; flex-wrap: wrap; }
-.fblock h2 { font-size: 24px; }
-.fblock .eyebrow { font-size: 13px; margin-bottom: 4px; }
+.fblock { margin-bottom: 20px; border: 1px solid var(--line); border-left: 6px solid var(--warn); border-radius: 24px; padding: 24px 28px; }
+.fblock.progress { border-left-color: var(--accent); }
+.fblock.resolved { border-left-color: var(--green); }
+.fblock.plain { border-left-width: 1px; }
+.fhead { display: flex; justify-content: space-between; align-items: center; gap: 12px 20px; flex-wrap: wrap; }
+.ftitle { display: flex; align-items: center; gap: 14px; }
+.fblock h2 { font-size: 23px; }
+.fblock .eyebrow { font-size: 12.5px; margin-bottom: 2px; color: var(--muted); }
 .when { color: var(--muted); font-size: 15px; margin: 10px 0 0; }
 .why { list-style: none; margin: 12px 0 0; padding: 0; }
 .why li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 2px; border-bottom: 1px solid var(--line); font-weight: 500; }
@@ -165,7 +248,7 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .notes textarea { width: 100%; min-height: 72px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); resize: vertical; font-size: 15.5px; }
 .notes textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
 .notes small { color: var(--muted); }
-.ask { background: var(--tint); border-radius: 24px; padding: 24px 28px; margin-bottom: 20px; }
+.ask { background: color-mix(in srgb, var(--warn-soft) 45%, var(--bg)); border: 1px dashed var(--warn); border-radius: 24px; padding: 24px 28px; margin-bottom: 20px; }
 .ask p { margin: 0 0 6px; }
 .ask .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 16px; margin: 16px 0; }
 .ask .fields label { display: flex; flex-direction: column; gap: 4px; font-weight: 500; font-size: 15px; }
@@ -184,21 +267,24 @@ dl.file dd.src { padding-left: 16px; display: flex; align-items: center; justify
 
 /* Openings */
 .ocards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.ocard { background: var(--tint); border-radius: 24px; padding: 22px 24px; }
+.ocard { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--s); border-radius: 24px; padding: 20px 22px; }
+.ocard.cold { border-top-color: var(--warn); }
 .ohead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .ocard h2 { font-size: 20px; line-height: 1.3; }
-.days { font-weight: 500; color: var(--muted); white-space: nowrap; font-size: 14px; }
-.meta { color: var(--muted); font-size: 14.5px; margin: 4px 0 12px; }
-.clist { list-style: none; margin: 0; padding: 0; background: var(--surface); border-radius: 16px; padding: 4px 14px; }
+.days { font-weight: 600; color: var(--s-ink); background: var(--s-soft); padding: 2px 10px; border-radius: 999px; white-space: nowrap; font-size: 13px; }
+.meta { color: var(--muted); font-size: 14.5px; margin: 6px 0 12px; }
+.clist { list-style: none; margin: 0; padding: 4px 14px; background: var(--tint); border-radius: 16px; }
 .clist li + li { border-top: 1px solid var(--line); }
 .clist button { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; text-align: left; }
-.clist button:hover .cn { color: var(--accent); }
+.clist button:hover .cn { color: var(--c-cand); }
 .cn { font-weight: 500; }
 .cn small { display: block; color: var(--muted); font-weight: 400; font-size: 14px; }
 .nocand { margin: 0; padding: 10px 14px; background: var(--warn-soft); color: var(--warn-ink); border-radius: 14px; font-weight: 500; }
+.possible { border: 1px solid var(--line); border-radius: 24px; padding: 8px; }
 
 /* District files */
-.filerow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.filerow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.filerow .fico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--fs, var(--s-soft)); color: var(--fi, var(--s-ink)); }
 .filerow h2 { font-size: 20px; }
 .filerow p { margin: 2px 0 0; color: var(--muted); }
 .filerow p b { color: var(--ink); font-weight: 500; }
@@ -215,51 +301,100 @@ dl.file dd.src { padding-left: 16px; display: flex; align-items: center; justify
 .howto code { background: var(--tint); padding: 2px 8px; border-radius: 6px; font-size: .9em; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 960px) {
+  .flagsgrid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .filterpanel { position: static; }
+}
 @media (max-width: 900px) {
-  .flagsgrid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .shell { display: block; }
+  .side { position: sticky; top: 0; height: auto; padding: 10px 12px 8px; border-right: 0; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--tint) 92%, transparent); backdrop-filter: saturate(1.4) blur(14px); overflow: visible; }
+  .brand { padding: 2px 4px 8px; }
+  .site-name small { display: none; }
+  .banner.bm { display: inline-block; margin-left: auto; }
+  .navlist { flex-direction: row; overflow-x: auto; gap: 4px; scrollbar-width: none; }
+  .navlist .ngl { display: none; }
+  .nav { flex: none; padding: 5px 10px 5px 5px; gap: 8px; font-size: 14px; }
+  .nico { width: 28px; height: 28px; border-radius: 8px; }
+  .nico .ic { width: 15px; height: 15px; }
+  .nav.on { box-shadow: 0 1px 3px rgba(0,0,0,.08), inset 0 -3px 0 var(--s); }
+  .sidefoot { display: none; }
+  .page { min-height: 0; }
 }
 @media (max-width: 720px) {
-  .hero .wrap { padding-block: 32px 4px; }
-  .nav.files { margin-left: 0; }
-  .flagsgrid > section, .fblock { padding: 20px; }
-  .av { width: 64px; height: 64px; line-height: 64px; font-size: 22px; }
+  .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hero .wrap { padding-top: 16px; }
+  .herocard { padding: 22px; gap: 16px; border-radius: 22px; }
+  .hico { width: 48px; height: 48px; border-radius: 14px; }
+  .hico .ic { width: 24px; height: 24px; }
+  .selwrap { margin-left: 0; }
+  .stat { min-width: 0; flex: 1 1 0; padding: 10px 12px; flex-direction: column; gap: 4px; }
+  .stat b { font-size: 24px; }
+  .panel, .fblock { padding: 18px; }
+  .av { width: 60px; height: 60px; line-height: 60px; font-size: 21px; }
   dl.file { grid-template-columns: 1fr auto; padding: 6px 18px; }
   dl.file dt { grid-column: 1 / -1; border-bottom: 0; padding-bottom: 0; }
   .why li { flex-direction: column; gap: 2px; }
   .src { text-align: left; }
   .reason { white-space: normal; }
-  .filerow { grid-template-columns: 1fr; }
-  .filerow .acts { justify-content: flex-start; }
+  .orow { grid-template-columns: auto minmax(0, 1fr); }
+  .orow .reason { grid-column: 2; justify-self: start; text-align: left; }
+  .filerow { grid-template-columns: auto minmax(0, 1fr); }
+  .filerow .acts { grid-column: 1 / -1; justify-content: flex-start; }
 }
 </style>
 </head>
-<body>
+<body data-c="flags">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="mark" viewBox="0 0 26 26">
       <circle cx="13" cy="13" r="12" fill="var(--accent)"/>
       <path d="M8 13.5l3.3 3.3L18.5 9" fill="none" stroke="var(--on-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
+    <!-- Section icons -->
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11.5l-2 4 2 4H5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.4c2.1.7 3.5 2.6 3.5 5.6"/></symbol>
+    <symbol id="i-userplus" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></symbol>
+    <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></symbol>
+    <!-- Flag-type icons -->
+    <symbol id="r-mentor" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/></symbol>
+    <symbol id="r-transfer" viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></symbol>
+    <symbol id="r-retire" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="r-load" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5zM3 12.5l9 5 9-5M3 17l9 5 9-5"/></symbol>
+    <symbol id="r-contract" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/></symbol>
+    <symbol id="r-license" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.7-2 3-2s2.4.6 3 2M14.5 10h4M14.5 14h4"/></symbol>
+    <symbol id="r-late" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="r-stalled" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
   </defs>
 </svg>
-<div class="topbar"><div class="wrap"><span>Staff tools · Human resources</span><span id="banner"></span></div></div>
-<header class="site">
-  <div class="wrap brandrow">
-    <svg class="mark" aria-hidden="true"><use href="#mark"/></svg>
-    <div class="site-name">Retain<small>Westfield High School · Principal</small></div>
-  </div>
-  <nav class="menu" aria-label="Sections">
-    <div class="wrap">
-      <button class="nav" data-view="flags">Flags <span class="count gold" id="c-flags"></span></button>
-      <button class="nav" data-view="teachers">Current teachers <span class="count" id="c-teachers"></span></button>
-      <button class="nav" data-view="candidates">Prospective hires <span class="count" id="c-candidates"></span></button>
-      <button class="nav" data-view="openings">Openings <span class="count" id="c-openings"></span></button>
-      <button class="nav files" data-view="files">District files</button>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <svg class="mark" aria-hidden="true"><use href="#mark"/></svg>
+      <div class="site-name">Retain<small>Westfield High School · Principal</small></div>
+      <span class="banner bm" id="banner-m"></span>
     </div>
-  </nav>
-</header>
-<main id="main" tabindex="-1"></main>
-<footer><div class="wrap">Retain · Uses only the information in your district's files. It does not contact anyone.</div></footer>
+    <nav class="navlist" aria-label="Sections">
+      <p class="ngl">Start here</p>
+      <button class="nav" data-view="flags" data-c="flags"><span class="nico"><svg class="ic" aria-hidden="true"><use href="#i-flag"/></svg></span><span class="nl">Flags</span><span class="count gold" id="c-flags"></span></button>
+      <p class="ngl">People</p>
+      <button class="nav" data-view="teachers" data-c="teach"><span class="nico"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span><span class="nl">Current teachers</span><span class="count" id="c-teachers"></span></button>
+      <button class="nav" data-view="candidates" data-c="cand"><span class="nico"><svg class="ic" aria-hidden="true"><use href="#i-userplus"/></svg></span><span class="nl">Prospective hires</span><span class="count" id="c-candidates"></span></button>
+      <p class="ngl">Hiring</p>
+      <button class="nav" data-view="openings" data-c="open"><span class="nico"><svg class="ic" aria-hidden="true"><use href="#i-brief"/></svg></span><span class="nl">Openings</span><span class="count" id="c-openings"></span></button>
+      <p class="ngl">Setup</p>
+      <button class="nav" data-view="files" data-c="files"><span class="nico"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg></span><span class="nl">District files</span></button>
+    </nav>
+    <div class="sidefoot">
+      <span class="banner" id="banner"></span>
+      <p>Staff tools · Human resources</p>
+    </div>
+  </aside>
+  <div class="page">
+    <main id="main" tabindex="-1"></main>
+    <footer><div class="wrap">Retain · Uses only the information in your district's files. It does not contact anyone.</div></footer>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -417,7 +552,7 @@ function show(field, v) {
 const RULES = {
   teacher: [
     {
-      id: "mentor", reason: "Early career, no mentor",
+      id: "mentor", reason: "Early career, no mentor", icon: "r-mentor",
       when: "a teacher in their first 3 years in the district has no mentor assigned.",
       needs: p => p.year === undefined ? ["year"] : p.year > 3 ? [] : p.mentor === "none" ? ["mentor", "mentorRequest"] : ["mentor"],
       applies: p => p.year <= 3 && p.mentor === "none",
@@ -429,7 +564,7 @@ const RULES = {
       step: () => "Assign a mentor before the school year ends."
     },
     {
-      id: "transfer", reason: "Transfer request",
+      id: "transfer", reason: "Transfer request", icon: "r-transfer",
       when: "a transfer request is on file.",
       needs: () => ["transferFiled"],
       applies: p => p.transferFiled !== "none",
@@ -440,7 +575,7 @@ const RULES = {
       step: () => "Meet with them about the request before it is decided."
     },
     {
-      id: "retire", reason: "Retirement window",
+      id: "retire", reason: "Retirement window", icon: "r-retire",
       when: "a teacher is eligible to retire within the next 2 years, or already is.",
       needs: () => ["retire"],
       applies: p => p.retire !== "none" && daysUntil(monthEnd(p.retire)) <= 730,
@@ -451,7 +586,7 @@ const RULES = {
       step: p => "Plan ahead for a possible " + (p.subject || "teaching") + " opening."
     },
     {
-      id: "load", reason: "Heavy teaching load",
+      id: "load", reason: "Heavy teaching load", icon: "r-load",
       when: "a teacher has 6 or more sections, or 4 or more different courses.",
       needs: () => ["sections", "courses"],
       applies: p => p.sections >= 6 || p.courses >= 4,
@@ -462,7 +597,7 @@ const RULES = {
       step: () => "Review this teacher's schedule for next year."
     },
     {
-      id: "contract", reason: "Contract renewal due",
+      id: "contract", reason: "Contract renewal due", icon: "r-contract",
       when: "a probationary teacher's renewal hasn't been offered and the deadline is within 90 days.",
       needs: p => p.contractType === undefined ? ["contractType"] : p.contractType !== "Probationary" ? [] : p.renewal === undefined ? ["renewal"] : p.renewal === "Not yet offered" ? ["renewBy"] : [],
       applies: p => p.contractType === "Probationary" && p.renewal === "Not yet offered" && p.renewBy !== "none" && daysUntil(dateOf(p.renewBy)) <= 90,
@@ -477,7 +612,7 @@ const RULES = {
       step: () => "Decide on the renewal before the deadline."
     },
     {
-      id: "license", reason: "License expiring",
+      id: "license", reason: "License expiring", icon: "r-license",
       when: "a teacher's license expires within 12 months and no renewal is on file.",
       needs: p => p.licenseExpires === undefined ? ["licenseExpires"] : daysUntil(monthEnd(p.licenseExpires)) <= 365 ? ["licenseRenewal"] : [],
       applies: p => daysUntil(monthEnd(p.licenseExpires)) <= 365 && p.licenseRenewal === "None on file",
@@ -490,7 +625,7 @@ const RULES = {
   ],
   candidate: [
     {
-      id: "clicense", reason: "Candidate license",
+      id: "clicense", reason: "Candidate license", icon: "r-license",
       when: "a candidate does not hold a standard license.",
       needs: () => ["licenseType"],
       applies: p => p.licenseType !== "Standard",
@@ -501,7 +636,7 @@ const RULES = {
       step: () => "Confirm their path to a standard license before making an offer."
     },
     {
-      id: "late", reason: "Late start",
+      id: "late", reason: "Late start", icon: "r-late",
       when: "a candidate can't start until after the opening's start date.",
       needs: () => ["available", "openingStart"],
       applies: p => dateOf(p.available) > dateOf(p.openingStart),
@@ -512,7 +647,7 @@ const RULES = {
       step: () => "Ask whether an earlier start is possible, and keep recruiting for this opening."
     },
     {
-      id: "stalled", reason: "No recent contact",
+      id: "stalled", reason: "No recent contact", icon: "r-stalled",
       when: "a candidate hasn't been contacted in 21 days or more and hasn't accepted an offer.",
       needs: () => ["stage", "lastContact"],
       applies: p => p.stage !== "Offer accepted" && -daysUntil(dateOf(p.lastContact)) >= 21,
@@ -524,6 +659,7 @@ const RULES = {
     }
   ]
 };
+const ALL_RULES = RULES.teacher.concat(RULES.candidate);
 
 /* ==================================================================
    STORAGE (this browser only). Wrapped so the app still works if
@@ -609,36 +745,45 @@ function recompute() {
   document.getElementById("c-teachers").textContent = TEACHERS.length;
   document.getElementById("c-candidates").textContent = CANDIDATES.length;
   document.getElementById("c-openings").textContent = OPENINGS.length;
-  document.getElementById("banner").textContent = DATA.source === "sample"
+  const sample = DATA.source === "sample";
+  document.getElementById("banner").textContent = sample
     ? "Sample district files · every person shown is made up"
     : "Your district files · stored only in this browser on this computer";
+  document.getElementById("banner-m").textContent = sample ? "Sample data" : "Your files";
 }
 
 /* ==================================================================
    RENDERING HELPERS
 ================================================================== */
 const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+const ic = id => `<svg class="ic" aria-hidden="true"><use href="#${id}"/></svg>`;
 const initials = name => name.replace(/^(Mr|Ms|Mrs|Dr)\.?\s+/, "").split(/[\s.]+/).filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
 const lastName = n => n.trim().split(/\s+/).pop().toLowerCase();
 const byLast = (a, b) => lastName(a.name).localeCompare(lastName(b.name));
 const activeFlags = p => p.flags.filter(f => f.status !== "resolved");
 const STATUS_LABEL = { open: "Open", progress: "In progress", resolved: "Resolved" };
+const kindColor = p => p.kind === "teacher" ? "teach" : "cand";
 const roleOf = p => p.kind === "teacher" ? (p.subject || "Subject not in files") + " · Current teacher" : (p.opening || "Opening not in files") + " · Candidate";
 const srcOf = (p, k) => p.src[k] || FIELD[p.kind][k].src;
-const hero = (eyebrow, title, sub) => `<div class="hero"><div class="wrap"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1>${sub ? `<p class="subhead">${sub}</p>` : ""}</div></div>`;
+const hero = (icon, eyebrow, title, sub) => `<div class="hero"><div class="wrap"><div class="herocard">
+  <div class="hico">${ic(icon)}</div>
+  <div class="who"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1>${sub ? `<p class="subhead">${sub}</p>` : ""}</div>
+</div></div></div>`;
 
 function flagChips(p) {
   const act = activeFlags(p);
-  if (act.length) return act.map(f => `<span class="flag ${f.status === "progress" ? "prog" : ""}" title="${STATUS_LABEL[f.status]}">${esc(f.rule.reason)}</span>`).join("");
+  if (act.length) return act.map(f => `<span class="flag ${f.status === "progress" ? "prog" : ""}" title="${STATUS_LABEL[f.status]}">${ic(f.rule.icon)}${esc(f.rule.reason)}</span>`).join("");
   if (p.missing.length) return `<span class="missing">Missing information</span>`;
   if (p.flags.length) return `<span class="ok">All flags resolved</span>`;
   return `<span class="ok">No flags</span>`;
 }
 
 const main = document.getElementById("main");
-const ui = { q: "", flaggedOnly: false, dept: "", tab: "open", notice: null };
+const ui = { q: "", dept: "", tab: "open", reason: "", lf: "", notice: null };
+const VIEW_COLOR = { flags: "flags", teachers: "teach", candidates: "cand", openings: "open", files: "files" };
 
 function setNav(view) {
+  document.body.dataset.c = VIEW_COLOR[view] || "flags";
   document.querySelectorAll(".nav").forEach(b => {
     const on = b.dataset.view === view;
     b.classList.toggle("on", on);
@@ -660,48 +805,77 @@ const departments = () => [...new Set(TEACHERS.map(t => t.dept).filter(Boolean))
 ================================================================== */
 function renderFlags() {
   setNav("flags");
-  const counts = { open: 0, progress: 0, resolved: 0 };
-  FLAGS.forEach(f => counts[f.status]++);
+  const total = { open: 0, progress: 0, resolved: 0 };
+  FLAGS.forEach(f => total[f.status]++);
   const inScope = f => !ui.dept || (ui.dept === "__cand" ? f.person.kind === "candidate" : f.person.dept === ui.dept);
-  const list = FLAGS.filter(f => f.status === ui.tab && inScope(f));
-  const byReason = {};
-  list.forEach(f => byReason[f.rule.reason] = (byReason[f.rule.reason] || 0) + 1);
-  const reasons = Object.entries(byReason).sort((a, b) => b[1] - a[1]);
-  const max = reasons.length ? reasons[0][1] : 1;
+  const scoped = FLAGS.filter(inScope);
+  const counts = { open: 0, progress: 0, resolved: 0 };
+  scoped.forEach(f => counts[f.status]++);
+  const inTab = scoped.filter(f => f.status === ui.tab);
+  const byRule = {};
+  inTab.forEach(f => byRule[f.rule.id] = (byRule[f.rule.id] || 0) + 1);
+  const max = Math.max(1, ...Object.values(byRule));
+  const sel = ALL_RULES.find(r => r.id === ui.reason) || null;
+  if (!sel) ui.reason = "";
+  const list = inTab.filter(f => !sel || f.rule.id === sel.id);
   const missing = PEOPLE.filter(p => p.missing.length);
-  main.innerHTML = hero("Who may leave", "Flags", `${counts.open} open · ${counts.progress} in progress · ${TEACHERS.length} teachers and ${CANDIDATES.length} candidates checked`) + `
+  const tone = ui.tab === "resolved" ? "done" : ui.tab === "progress" ? "prog" : "";
+
+  const ruleRow = r => {
+    const n = byRule[r.id] || 0, on = ui.reason === r.id;
+    return `<button class="rrow ${on ? "on" : ""}" data-reason="${r.id}" aria-pressed="${on}" ${n || on ? "" : "disabled"}>
+      <span class="rico">${ic(r.icon)}</span>
+      <span class="rl"><span class="rn">${esc(r.reason)}</span><span class="bt"><span class="bf" style="width:${Math.round(n / max * 100)}%"></span></span></span>
+      <b class="rc">${n}</b>
+    </button>`;
+  };
+
+  main.innerHTML = hero("i-flag", "Start here · who may leave", "Flags",
+    `${total.open} open · ${total.progress} in progress · ${TEACHERS.length} teachers and ${CANDIDATES.length} candidates checked`) + `
     <div class="wrap content">
     <div class="tools">
-      <div class="seg" role="group" aria-label="Flag status">
-        ${["open", "progress", "resolved"].map(s => `<button data-tab="${s}" aria-pressed="${ui.tab === s}">${STATUS_LABEL[s]} (${counts[s]})</button>`).join("")}
+      <div class="stats" role="group" aria-label="Flag status">
+        ${["open", "progress", "resolved"].map(s => `<button class="stat" data-tab="${s}" data-tone="${s}" aria-pressed="${ui.tab === s}"><b>${counts[s]}</b><span>${STATUS_LABEL[s]}</span></button>`).join("")}
       </div>
-      <select class="select" id="dept" aria-label="Filter by department">
-        <option value="">All departments</option>
-        ${departments().map(d => `<option ${ui.dept === d ? "selected" : ""}>${esc(d)}</option>`).join("")}
-        <option value="__cand" ${ui.dept === "__cand" ? "selected" : ""}>Candidates only</option>
-      </select>
+      <label class="selwrap"><span class="label">Show</span>
+        <select class="select" id="dept">
+          <option value="">Everyone</option>
+          ${departments().map(d => `<option ${ui.dept === d ? "selected" : ""}>${esc(d)}</option>`).join("")}
+          <option value="__cand" ${ui.dept === "__cand" ? "selected" : ""}>Candidates only</option>
+        </select>
+      </label>
     </div>
     <div class="flagsgrid">
-      <section aria-label="Flags by reason">
-        <h2 class="sec">By reason</h2>
-        ${reasons.length ? reasons.map(([r, n], i) => `
-          <div class="bar ${i === 0 ? "top" : ""}">
-            <div class="bl"><span>${esc(r)}</span><b>${n}</b></div>
-            <div class="bt"><div class="bf" style="width:${Math.round(n / max * 100)}%"></div></div>
-          </div>`).join("") : `<p class="empty" style="padding-left:0">Nothing to count.</p>`}
+      <section class="panel filterpanel" aria-label="Filter by flag type">
+        <div class="phd"><h2 class="sec">Filter by flag</h2>${sel ? `<button class="linkish" data-reason="">Clear</button>` : ""}</div>
+        <button class="rrow ${!sel ? "on" : ""}" data-reason="" aria-pressed="${!sel}">
+          <span class="rico">${ic("i-flag")}</span><span class="rl"><span class="rn">All flags</span></span><b class="rc">${inTab.length}</b>
+        </button>
+        <p class="ngl">Current teachers</p>
+        ${RULES.teacher.map(ruleRow).join("")}
+        <p class="ngl">Prospective hires</p>
+        ${RULES.candidate.map(ruleRow).join("")}
       </section>
-      <section aria-label="${STATUS_LABEL[ui.tab]} flags">
-        <h2 class="sec">${STATUS_LABEL[ui.tab]} flags</h2>
+      <section class="panel" aria-label="${STATUS_LABEL[ui.tab]} flags">
+        <h2 class="sec">${STATUS_LABEL[ui.tab]} flags${sel ? ` · <span class="hl">${esc(sel.reason)}</span>` : ""} <span class="muted">(${list.length})</span></h2>
+        ${sel ? `<p class="when" style="margin:-8px 0 12px">Flagged when ${esc(sel.when)}</p>` : ""}
         <div id="flaglist">${list.length ? list.map(f => `
           <button class="orow" data-id="${esc(f.person.id)}">
-            <span class="n">${esc(f.person.name)}<small>${esc(roleOf(f.person))}</small></span>
-            <span class="reason ${f.status === "resolved" ? "done" : ""}">${esc(f.rule.reason)}${(STATUS[f.key] || {}).note ? `<small>Has notes</small>` : ""}</span>
-          </button>`).join("") : `<p class="empty" style="padding-left:0">No ${STATUS_LABEL[ui.tab].toLowerCase()} flags${ui.dept ? " in this group" : ""}.</p>`}</div>
-        ${missing.length && ui.tab === "open" ? `<div class="note"><b>Missing information:</b> <span id="misslist">${missing.map(p => `<button class="linkish" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join(", ")}</span>. Some checks could not be run because the files leave something out.</div>` : ""}
+            <span class="rico ${tone}">${ic(f.rule.icon)}</span>
+            <span class="n">${esc(f.person.name)}<small><span class="kdot" data-c="${kindColor(f.person)}"></span>${esc(roleOf(f.person))}</small></span>
+            <span class="reason ${tone}">${esc(f.rule.reason)}${(STATUS[f.key] || {}).note ? `<small>Has notes</small>` : ""}</span>
+          </button>`).join("") : `<p class="empty" style="padding-left:0">No ${STATUS_LABEL[ui.tab].toLowerCase()} flags${sel ? " for " + esc(sel.reason.toLowerCase()) : ""}${ui.dept ? " in this group" : ""}.${sel ? `<br><button class="linkish clearbtn" data-reason="">Show all flags</button>` : ""}</p>`}</div>
+        ${missing.length && ui.tab === "open" && !sel ? `<div class="note"><b>Missing information:</b> <span id="misslist">${missing.map(p => `<button class="linkish" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join(", ")}</span>. Some checks could not be run because the files leave something out.</div>` : ""}
       </section>
     </div>
     </div>`;
   main.querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => { ui.tab = b.dataset.tab; renderFlags(); }));
+  main.querySelectorAll("[data-reason]").forEach(b => b.addEventListener("click", () => {
+    ui.reason = b.dataset.reason === ui.reason ? "" : b.dataset.reason;
+    renderFlags();
+    const back = main.querySelector(`.rrow[data-reason="${ui.reason}"]`);
+    if (back) back.focus({ preventScroll: true });
+  }));
   document.getElementById("dept").addEventListener("change", e => { ui.dept = e.target.value; renderFlags(); });
   bindPersonLinks(main.querySelector(".flagsgrid"));
 }
@@ -714,12 +888,32 @@ function listPage(kind) {
   const all = isT ? TEACHERS : CANDIDATES;
   setNav(isT ? "teachers" : "candidates");
   const flagged = all.filter(p => activeFlags(p).length).length;
-  main.innerHTML = hero(isT ? "Your staff" : "Hiring", isT ? "Current teachers" : "Prospective hires", `${plural(all.length, isT ? "teacher" : "candidate")} · ${flagged} flagged`) + `
+  const hasRule = (p, id) => activeFlags(p).some(f => f.rule.id === id);
+  const opts = [
+    { v: "", label: "Everyone", n: all.length },
+    { v: "any", label: "Any flag", icon: "i-flag", n: flagged },
+    ...RULES[kind].map(r => ({ v: r.id, label: r.reason, icon: r.icon, n: all.filter(p => hasRule(p, r.id)).length })),
+    { v: "missing", label: "Missing info", n: all.filter(p => p.missing.length).length },
+    { v: "none", label: "No flags", n: all.filter(p => !activeFlags(p).length && !p.missing.length).length }
+  ];
+  if (!opts.some(o => o.v === ui.lf)) ui.lf = "";
+  const matchFlag = p =>
+    !ui.lf ? true :
+    ui.lf === "any" ? activeFlags(p).length > 0 :
+    ui.lf === "missing" ? p.missing.length > 0 :
+    ui.lf === "none" ? !activeFlags(p).length && !p.missing.length :
+    hasRule(p, ui.lf);
+
+  main.innerHTML = hero(isT ? "i-users" : "i-userplus", isT ? "People · your staff" : "People · hiring", isT ? "Current teachers" : "Prospective hires",
+    `${plural(all.length, isT ? "teacher" : "candidate")} · ${flagged} flagged`) + `
     <div class="wrap content">
     <div class="tools">
-      <input class="search" type="search" id="q" placeholder="Search by name, ${isT ? "subject" : "opening"} or flag" aria-label="Search" value="${esc(ui.q)}">
-      ${isT ? `<select class="select" id="dept" aria-label="Filter by department"><option value="">All departments</option>${departments().map(d => `<option ${ui.dept === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>` : ""}
-      <label class="check"><input type="checkbox" id="fo" ${ui.flaggedOnly ? "checked" : ""}> Show flagged only</label>
+      <input class="search" type="search" id="q" placeholder="Search by name or ${isT ? "subject" : "opening"}" aria-label="Search" value="${esc(ui.q)}">
+      ${isT ? `<label class="selwrap"><span class="label">Department</span><select class="select" id="dept"><option value="">All departments</option>${departments().map(d => `<option ${ui.dept === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select></label>` : ""}
+    </div>
+    <div class="chips" role="group" aria-label="Filter by flag">
+      <span class="label">Filter by flag</span>
+      ${opts.map(o => `<button class="chip" data-lf="${o.v}" aria-pressed="${ui.lf === o.v}" ${o.n || ui.lf === o.v ? "" : "disabled"}>${o.icon ? ic(o.icon) : ""}${esc(o.label)}<span class="cc">${o.n}</span></button>`).join("")}
     </div>
     <div class="tablewrap"><table>
       <thead><tr>${isT ? "<th>Name</th><th>Subject</th><th>Year in district</th><th>Flags</th>" : "<th>Name</th><th>Opening</th><th>Stage</th><th>Last contact</th><th>Flags</th>"}</tr></thead>
@@ -729,7 +923,7 @@ function listPage(kind) {
   const fill = () => {
     const q = ui.q.trim().toLowerCase();
     const list = all.filter(p =>
-      (!ui.flaggedOnly || activeFlags(p).length) &&
+      matchFlag(p) &&
       (!isT || !ui.dept || ui.dept === "__cand" || p.dept === ui.dept) &&
       (!q || [p.name, p.subject, p.dept, p.opening, p.stage, ...p.flags.map(f => f.rule.reason)].filter(Boolean).join(" ").toLowerCase().includes(q))
     ).sort((a, b) => activeFlags(b).length - activeFlags(a).length || b.missing.length - a.missing.length || byLast(a, b));
@@ -741,11 +935,15 @@ function listPage(kind) {
           ? `<td>${p.subject ? esc(p.subject) : dash}</td><td class="num">${p.year !== undefined ? ord(p.year) : dash}</td>`
           : `<td>${p.opening ? esc(p.opening) : dash}</td><td>${p.stage ? esc(p.stage) : dash}</td><td class="num">${p.lastContact ? esc(fmtDate(p.lastContact)) : dash}</td>`}
         <td>${flagChips(p)}</td>
-      </tr>`).join("") : `<tr><td colspan="5" class="empty">No ${isT ? "teachers" : "candidates"} match.</td></tr>`;
+      </tr>`).join("") : `<tr><td colspan="5" class="empty">No ${isT ? "teachers" : "candidates"} match these filters.</td></tr>`;
     bindPersonLinks(document.getElementById("rows"));
   };
+  main.querySelectorAll("[data-lf]").forEach(b => b.addEventListener("click", () => {
+    ui.lf = b.dataset.lf === ui.lf ? "" : b.dataset.lf;
+    main.querySelectorAll("[data-lf]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.lf === ui.lf)));
+    fill();
+  }));
   document.getElementById("q").addEventListener("input", e => { ui.q = e.target.value; fill(); });
-  document.getElementById("fo").addEventListener("change", e => { ui.flaggedOnly = e.target.checked; fill(); });
   if (isT) document.getElementById("dept").addEventListener("change", e => { ui.dept = e.target.value; fill(); });
   fill();
 }
@@ -762,7 +960,7 @@ function renderOpenings() {
   }).sort((a, b) => a.cands.length - b.cands.length || (a.o.posted || "").localeCompare(b.o.posted || ""));
   const unmatched = CANDIDATES.filter(c => !c.posting);
   const possible = FLAGS.filter(f => (f.rule.id === "transfer" || f.rule.id === "retire") && f.status !== "resolved");
-  main.innerHTML = hero("Hiring", "Openings", `${plural(OPENINGS.length, "posted opening")} · ${cards.filter(c => !c.cands.length).length} with no candidates · ${possible.length} possible from flags`) + `
+  main.innerHTML = hero("i-brief", "Hiring · positions to fill", "Openings", `${plural(OPENINGS.length, "posted opening")} · ${cards.filter(c => !c.cands.length).length} with no candidates · ${possible.length} possible from flags`) + `
     <div class="wrap content">
     <h2 class="sec">Posted openings</h2>
     <div class="ocards">${cards.map(({ o, cands }) => {
@@ -771,15 +969,16 @@ function renderOpenings() {
       return `<article class="ocard ${cands.length ? "" : "cold"}">
         <div class="ohead"><h2>${esc(o.position)}</h2>${open !== null ? `<span class="days">Open ${plural(open, "day")}</span>` : ""}</div>
         <p class="meta">${esc(meta || "Details not in files")}</p>
-        ${cands.length ? `<ul class="clist">${cands.map(c => `<li><button data-id="${esc(c.id)}"><span class="cn">${esc(c.name)}<small>${esc(c.stage || "Stage not in files")}</small></span><span>${activeFlags(c).map(f => `<span class="flag">${esc(f.rule.reason)}</span>`).join("")}</span></button></li>`).join("")}</ul>`
+        ${cands.length ? `<ul class="clist">${cands.map(c => `<li><button data-id="${esc(c.id)}"><span class="cn"><span class="kdot" data-c="cand"></span>${esc(c.name)}<small>${esc(c.stage || "Stage not in files")}</small></span><span>${activeFlags(c).map(f => `<span class="flag">${ic(f.rule.icon)}${esc(f.rule.reason)}</span>`).join("")}</span></button></li>`).join("")}</ul>`
           : `<p class="nocand">No candidates yet.</p>`}
       </article>`;
     }).join("")}</div>
     ${possible.length ? `
       <div class="spaced"></div><h2 class="sec">Possible openings, from flags</h2>
-      <div>${possible.map(f => `
+      <div class="possible">${possible.map(f => `
         <button class="orow" data-id="${esc(f.person.id)}">
-          <span class="n">${esc(f.person.subject || "Subject not in files")}<small>${esc(f.person.name)} · ${esc(f.why[0][0])}</small></span>
+          <span class="rico">${ic(f.rule.icon)}</span>
+          <span class="n">${esc(f.person.subject || "Subject not in files")}<small><span class="kdot" data-c="teach"></span>${esc(f.person.name)} · ${esc(f.why[0][0])}</small></span>
           <span class="reason">${esc(f.rule.reason)}</span>
         </button>`).join("")}</div>` : ""}
     ${unmatched.length ? `<div class="note"><b>Not matched to a posted opening:</b> ${unmatched.map(c => `<button class="linkish" data-id="${esc(c.id)}">${esc(c.name)}</button>`).join(", ")}. The opening on their application doesn't match any job posting.</div>` : ""}
@@ -804,7 +1003,7 @@ function renderPerson(id, keepScroll) {
   setNav(listView);
   const act = activeFlags(p);
   const badge = act.length
-    ? `<span class="flag">${p.kind === "teacher" ? "Flagged: may leave" : "Flagged: check before offer"}</span>`
+    ? `<span class="flag">${ic("i-flag")}${p.kind === "teacher" ? "Flagged: may leave" : "Flagged: check before offer"}</span>`
     : p.flags.length ? `<span class="clear done">All flags resolved</span>` : `<span class="clear">${p.missing.length ? "Missing information" : "No flags"}</span>`;
   const missFields = [...new Set(p.missing.flatMap(m => m.fields))].map(k => FIELD[p.kind][k]);
   const fileFields = FIELDS[p.kind].filter(f => f.k !== "name");
@@ -815,7 +1014,7 @@ function renderPerson(id, keepScroll) {
   main.innerHTML = `
     <div class="hero"><div class="wrap">
       <button class="back" id="back">← Back</button>
-      <div class="phead">
+      <div class="herocard">
         <div class="av" aria-hidden="true">${esc(initials(p.name))}</div>
         <div class="who">
           <p class="eyebrow">${p.kind === "teacher" ? "Current teacher" : "Prospective hire"}</p>
@@ -832,9 +1031,9 @@ function renderPerson(id, keepScroll) {
       <div class="pbody">
         ${p.flags.map(f => {
           const st = STATUS[f.key] || {};
-          return `<section class="fblock ${f.status === "resolved" ? "resolved" : ""}" data-key="${esc(f.key)}">
+          return `<section class="fblock ${f.status}" data-key="${esc(f.key)}">
             <div class="fhead">
-              <div><p class="eyebrow">Why this flag</p><h2>${esc(f.rule.reason)}</h2></div>
+              <div class="ftitle"><span class="rico ${f.status === "resolved" ? "done" : f.status === "progress" ? "prog" : ""}">${ic(f.rule.icon)}</span><div><p class="eyebrow">Why this flag</p><h2>${esc(f.rule.reason)}</h2></div></div>
               <div class="seg small" role="group" aria-label="Status of ${esc(f.rule.reason)}">
                 ${["open", "progress", "resolved"].map(s => `<button data-s="${s}" aria-pressed="${f.status === s}">${STATUS_LABEL[s]}</button>`).join("")}
               </div>
@@ -857,7 +1056,7 @@ function renderPerson(id, keepScroll) {
             <button class="btn" id="savemiss">Save and re-check</button>
             <p class="err" id="misserr" role="alert"></p>
           </section>` : ""}
-        ${!p.flags.length && !p.missing.length ? `<section class="fblock"><h2 class="sec">Checks</h2><p style="margin:0">All ${RULES[p.kind].length} checks ran. Nothing in this file matches a flag.</p></section>` : ""}
+        ${!p.flags.length && !p.missing.length ? `<section class="fblock plain"><h2 class="sec">Checks</h2><p style="margin:0">All ${RULES[p.kind].length} checks ran. Nothing in this file matches a flag.</p></section>` : ""}
         <section>
           <h2 class="sec">What's in the file</h2>
           <dl class="file">${fileFields.map(f => {
@@ -968,17 +1167,18 @@ function importFile(kind, text, fileName) {
 function renderFiles() {
   setNav("files");
   const FILES = [
-    { kind: "teacher",   title: "Teachers",          desc: "Personnel, pension, schedule, mentoring, HR, contract and license records, one row per teacher." },
-    { kind: "candidate", title: "Candidates",        desc: "Applications and license lookups, one row per candidate." },
-    { kind: "opening",   title: "Job postings",      desc: "Open positions, one row per posting." }
+    { kind: "teacher",   title: "Teachers",     icon: "i-users",     c: "teach", desc: "Personnel, pension, schedule, mentoring, HR, contract and license records, one row per teacher." },
+    { kind: "candidate", title: "Candidates",   icon: "i-userplus",  c: "cand",  desc: "Applications and license lookups, one row per candidate." },
+    { kind: "opening",   title: "Job postings", icon: "i-brief",     c: "open",  desc: "Open positions, one row per posting." }
   ];
   const n = ui.notice;
-  main.innerHTML = hero("Where the information comes from", "District files", DATA.source === "sample" ? "Using sample files. Every person in them is made up." : "Using your files. They stay in this browser on this computer and are never sent anywhere.") + `
+  main.innerHTML = hero("i-folder", "Setup · where the information comes from", "District files", DATA.source === "sample" ? "Using sample files. Every person in them is made up." : "Using your files. They stay in this browser on this computer and are never sent anywhere.") + `
     <div class="wrap content">
     <h2 class="sec">Your files</h2>
     ${FILES.map(f => {
       const imp = (DATA.imported || {})[f.kind];
       return `<div class="filerow">
+        <div class="fico" data-c="${f.c}" style="--fs:var(--s-soft);--fi:var(--s-ink)">${ic(f.icon)}</div>
         <div><h2>${f.title}</h2><p>${f.desc}</p><p><b>${plural(DATA[f.kind].length, "row")}</b> · ${imp ? "from " + esc(imp.file) + ", " + esc(fmtDate(imp.at)) : "sample"}</p></div>
         <div class="acts">
           <input type="file" id="up-${f.kind}" accept=".csv,text/csv" data-kind="${f.kind}">
@@ -1034,7 +1234,7 @@ function routeNow() {
   main.focus({ preventScroll: true });
   window.scrollTo(0, 0);
 }
-document.querySelectorAll(".nav").forEach(b => b.addEventListener("click", () => { ui.q = ""; ui.flaggedOnly = false; go(b.dataset.view); }));
+document.querySelectorAll(".nav").forEach(b => b.addEventListener("click", () => { ui.q = ""; ui.lf = ""; go(b.dataset.view); }));
 window.addEventListener("hashchange", routeNow);
 recompute();
 routeNow();
